@@ -15,4 +15,7 @@ An esports-styled web dashboard for analyzing map-wise agent composition win rat
 
 ```bash
 pip install -r requirements.txt
-python3 test.py
+pip install streamlit pandas plotly
+streamlit run streamlit_dashboard.py
+
+
