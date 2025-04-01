@@ -2,7 +2,7 @@
 
 An esports-styled web dashboard for analyzing map-wise agent composition win rates from scrim data. Built with Dash, Plotly, and Python.
 
-![Dashboard Screenshot](https://github.com/Ominousx/valorant-comp-dashboard/raw/main/screenshot.png)
+![Dashboard Screenshot](https://github.com/Ominousx/valorant-comp-dashboard/raw/main/assets/screenshot.png)
 
 ## ✨ Features
 
