@@ -6,12 +6,26 @@ from data_cleaner import clean_scrim_form
 st.set_page_config(page_title="Valorant Scrim Dashboard", layout="wide")
 st.markdown("""
     <style>
-    body { background-color: #0f172a; color: #f8fafc; }
-    h1 { color: #f43f5e; text-align: center; font-family: 'Inter'; }
+    body {
+        background-color: #000000;
+        color: #ffffff;
+    }
+    h1, h2, h3, .stTabs, .stButton {
+        font-family: 'Inter', sans-serif;
+        color: #FDB913;
+    }
+    .stDataFrame, .stTable {
+        background-color: #1a1a1a;
+    }
+    .block-container {
+        padding-top: 2rem;
+    }
     </style>
 """, unsafe_allow_html=True)
 
 st.title("Valorant Scrim Dashboard")
+st.image("wolves_logo.png", width=100)
+
 
 # Load form.csv for overview and map comps
 try:
@@ -105,31 +119,44 @@ with tabs[1]:
                 losses=('Loss', 'sum')
             ).reset_index()
 
+            grouped['Win Rate %'] = grouped['wins'] / grouped['games'] * 100
+            grouped['Comp String'] = grouped['Composition'].apply(lambda x: '-'.join(x))
+            grouped = grouped.sort_values(by='Win Rate %', ascending=False).head(15)
+
+
             grouped['Win Rate'] = grouped['wins'] / grouped['games']
             grouped['Comp String'] = grouped['Composition'].apply(lambda x: '-'.join(x))
             grouped = grouped.sort_values(by='Win Rate', ascending=False).head(15)
 
             fig = px.bar(
                 grouped,
-                x='Win Rate',
+                x='Win Rate %',
                 y='Comp String',
                 text=grouped.apply(
-                    lambda row: f"{row['Win Rate']:.2%} ({row['wins']}W-{row['losses']}L-{row['draws']}D / {row['games']} games)",
+                    lambda row: f"{row['Win Rate %']:.1f}% ({row['wins']}W-{row['losses']}L-{row['draws']}D / {row['games']} games)",
                     axis=1
                 ),
                 orientation='h',
-                title=f'Top Compositions on {selected_map}',
-                labels={'Win Rate': 'Win Rate', 'Comp String': 'Agent Composition'},
-                color='Win Rate',
-                color_continuous_scale='reds'
+                title=f"Top Compositions on {selected_map}",
+                labels={'Win Rate %': 'Win Rate (%)', 'Comp String': 'Agent Composition'},
+                color_discrete_sequence=['#FDB913']
             )
-            fig.update_traces(textposition='outside', marker_line_color='#1e293b', marker_line_width=1.5)
+
+            fig.update_traces(
+                textposition='outside',
+                marker_line_color='#333333',
+                marker_line_width=1.2
+            )
+
             fig.update_layout(
-                plot_bgcolor='#0f172a',
-                paper_bgcolor='#0f172a',
-                font=dict(color='#f8fafc'),
-                yaxis={'categoryorder': 'total ascending'}
+                plot_bgcolor='#000000',
+                paper_bgcolor='#000000',
+                font=dict(color='#FDB913', family='Inter'),
+                title_font=dict(color='#FDB913', size=20),
+                yaxis=dict(categoryorder='total ascending', gridcolor='#333333'),
+                xaxis=dict(range=[0, 100], gridcolor='#333333')
             )
+
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.info("No valid compositions found for this map.")
@@ -155,6 +182,19 @@ with tabs[2]:
         if start_date and end_date:
             filtered_df = filtered_df[(filtered_df['Date'] >= start_date) & (filtered_df['Date'] <= end_date)]
 
+        # Derive Atk/Def WR based on Star Side
+        def extract_wr(row, side):
+            if pd.isna(row['Start']) or pd.isna(row['First Half WR']) or pd.isna(row['Second Half WR']):
+                return None
+            if side == 'Attack':
+                return row['First Half WR'] if row['Start'] == 'Attack' else row['Second Half WR']
+            elif side == 'Defence':
+                return row['First Half WR'] if row['Start'] == 'Defence' else row['Second Half WR']
+            return None
+
+        filtered_df['Atk WR Derived'] = filtered_df.apply(lambda row: extract_wr(row, 'Attack'), axis=1)
+        filtered_df['Def WR Derived'] = filtered_df.apply(lambda row: extract_wr(row, 'Defence'), axis=1)
+
         st.dataframe(filtered_df, use_container_width=True)
 
         st.markdown("### 🔍 Summary Stats")
@@ -164,8 +204,9 @@ with tabs[2]:
             'Wins': ('Outcome', lambda x: (x.str.lower() == 'win').sum()),
             'Draws': ('Outcome', lambda x: (x.str.lower() == 'draw').sum()),
             'Losses': ('Outcome', lambda x: (x.str.lower() == 'loss').sum()),
-            'Avg_FH_WR': ('First Half WR', 'mean'),
-            'Avg_SH_WR': ('Second Half WR', 'mean'),
+            'Avg_Atk_WR': ('Atk WR Derived', lambda x: pd.to_numeric(x.astype(str).str.replace('%','', regex=False), errors='coerce').mean()),
+            'Avg_Def_WR': ('Def WR Derived', lambda x: pd.to_numeric(x.astype(str).str.replace('%','', regex=False), errors='coerce').mean()),
+
         }
 
         if 'Atk PP %' in filtered_df.columns:
@@ -175,6 +216,67 @@ with tabs[2]:
             agg_dict['Def_PP_Success'] = ('Def PP %', lambda x: pd.to_numeric(x.str.replace('%',''), errors='coerce').mean())
 
         summary = filtered_df.groupby('Map').agg(**agg_dict).reset_index()
-        st.dataframe(summary, use_container_width=True)
-    else:
-        st.info("cleaned_score.csv not found or empty.")
+        # Calculate Round Win Rate using (Atk + Def) / 2
+        summary['Raw_Round_WR'] = (summary['Avg_Atk_WR'] + summary['Avg_Def_WR']) / 2
+        summary['Round WR'] = summary['Raw_Round_WR'].apply(lambda x: f"{x * 100:.1f}%" if pd.notnull(x) else "-")
+
+
+        # Optional: Format WRs as percentages
+        # Save raw numeric values for chart use (before formatting to %)
+        summary['Raw_Atk_WR'] = summary['Avg_Atk_WR']
+        summary['Raw_Def_WR'] = summary['Avg_Def_WR']
+
+        summary['Avg_Atk_WR'] = summary['Avg_Atk_WR'].apply(lambda x: f"{x * 100:.1f}%" if pd.notnull(x) else "-")
+        summary['Avg_Def_WR'] = summary['Avg_Def_WR'].apply(lambda x: f"{x * 100:.1f}%" if pd.notnull(x) else "-")
+
+
+        # Only show selected columns in the summary table (hide raw WRs)
+        display_cols = ['Map', 'Games', 'Wins', 'Draws', 'Losses', 'Avg_Atk_WR', 'Avg_Def_WR','Round WR']
+        st.dataframe(summary[display_cols], use_container_width=True)
+
+        # Visualize Attack vs Defense Win Rates
+        # Prepare data
+        plot_df = summary[['Map', 'Raw_Atk_WR', 'Raw_Def_WR']].copy()
+        plot_df.rename(columns={'Raw_Atk_WR': 'Attack', 'Raw_Def_WR': 'Defense'}, inplace=True)
+        plot_df['Attack'] *= 100
+        plot_df['Defense'] *= 100
+
+        # Melt for plotting
+        plot_df = plot_df.melt(id_vars='Map', var_name='Side', value_name='Win Rate (%)')
+        plot_df['Map'] = pd.Categorical(plot_df['Map'], categories=plot_df.groupby('Map')['Win Rate (%)'].mean().sort_values(ascending=False).index, ordered=True)
+
+        # Wolves color map
+        color_map = {
+            'Attack': '#FDB913',   # Gold
+            'Defense': '#ffffff'   # White
+        }
+
+        fig = px.bar(
+            plot_df,
+            x='Map',
+            y='Win Rate (%)',
+            color='Side',
+            color_discrete_map=color_map,
+            barmode='group',
+            text=plot_df['Win Rate (%)'].apply(lambda x: f"{x:.1f}%"),
+            title="Attack vs Defense Win Rates by Map"
+        )
+
+        fig.update_traces(
+            textposition='outside',
+            marker_line_color='#333333',
+            marker_line_width=1.2,
+            width=0.4
+        )
+
+        fig.update_layout(
+            plot_bgcolor='#000000',
+            paper_bgcolor='#000000',
+            font=dict(color='#FDB913', family='Inter'),
+            title_font=dict(color='#FDB913', size=20),
+            legend_title_text='Side',
+            xaxis=dict(tickangle=-25, gridcolor='#333333'),
+            yaxis=dict(range=[0, 100], gridcolor='#333333')
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
