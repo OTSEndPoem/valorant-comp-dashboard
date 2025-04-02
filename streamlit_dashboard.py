@@ -32,32 +32,26 @@ tabs = st.tabs(["📊 Overview", "🧩 Map Composition Win Rates", "📈 Round I
 
 # 📊 OVERVIEW TAB
 with tabs[0]:
+    st.markdown("### 📅 Filter by Date Range")
+    overview_dates = sorted(score_df['Date'].dropna().unique())
+    date_col1, date_col2 = st.columns(2)
+    start_date_overview = date_col1.selectbox("Start Date (Overview)", overview_dates, key="overview_start")
+    end_date_overview = date_col2.selectbox("End Date (Overview)", overview_dates, index=len(overview_dates)-1, key="overview_end")
+
+    filtered_score = score_df[(score_df['Date'] >= start_date_overview) & (score_df['Date'] <= end_date_overview)]
+
     st.subheader("Map Overview: Total Games, Wins, Draws, Losses, Win Rate")
-
-    if not form_df.empty:
-        team_rows = []
-        for i in range(0, len(form_df) - 4, 5):
-            block = form_df.iloc[i:i+5]
-            if len(block) == 5 and block['Column 1'].nunique() == 1 and block['Result'].nunique() == 1:
-                team_rows.append({
-                    'Map': block['Column 1'].iloc[0],
-                    'Result': block['Result'].iloc[0].lower()
-                })
-
-        team_df = pd.DataFrame(team_rows)
-        if not team_df.empty:
-            summary = team_df.groupby('Map').agg(
-                Games=('Result', 'count'),
-                Wins=('Result', lambda x: (x == 'win').sum()),
-                Draws=('Result', lambda x: (x == 'draw').sum()),
-                Losses=('Result', lambda x: (x == 'loss').sum())
-            ).reset_index()
-            summary['Win Rate'] = summary['Wins'] / summary['Games']
-            st.dataframe(summary.sort_values(by='Map'), use_container_width=True)
-        else:
-            st.info("No valid 5-player team data found to build overview.")
+    if not filtered_score.empty:
+        summary = filtered_score.groupby('Map').agg(
+            Games=('Outcome', 'count'),
+            Wins=('Outcome', lambda x: (x.str.lower() == 'win').sum()),
+            Draws=('Outcome', lambda x: (x.str.lower() == 'draw').sum()),
+            Losses=('Outcome', lambda x: (x.str.lower() == 'loss').sum())
+        ).reset_index()
+        summary['Win Rate'] = summary['Wins'] / summary['Games']
+        st.dataframe(summary.sort_values(by='Map'), use_container_width=True)
     else:
-        st.info("form.csv not available or empty.")
+        st.info("No scrim data in this date range.")
 
 # 🧩 MAP COMPOSITION TAB
 with tabs[1]:
@@ -73,19 +67,29 @@ with tabs[1]:
         selected_map = st.selectbox("Select a map:", valid_maps)
 
         teams = []
+        filtered_dates = set(filtered_score['Date'])
         for i in range(0, len(form_df) - 4, 5):
             block = form_df.iloc[i:i+5]
+            map_match = block['Column 1'].iloc[0]
+            result_match = block['Result'].iloc[0]
+
             if (
                 len(block) == 5 and
                 block['Column 1'].nunique() == 1 and
                 block['Result'].nunique() == 1 and
                 block['Column 1'].iloc[0] == selected_map
             ):
-                agents = tuple(sorted(block['Agent'].tolist()))
-                teams.append({
-                    'Composition': agents,
-                    'Result': block['Result'].iloc[0]
-                })
+                match_filter = (
+                    (score_df['Map'] == map_match) &
+                    (score_df['Outcome'].str.lower() == result_match.lower()) &
+                    (score_df['Date'].isin(filtered_dates))
+                )
+                if not score_df[match_filter].empty:
+                    agents = tuple(sorted(block['Agent'].tolist()))
+                    teams.append({
+                        'Composition': agents,
+                        'Result': result_match
+                    })
 
         df = pd.DataFrame(teams)
         if not df.empty:
@@ -141,8 +145,8 @@ with tabs[2]:
 
         col1, col2 = st.columns(2)
         selected_map = col1.selectbox("Filter by Map", ["All"] + maps)
-        start_date = col2.selectbox("Start Date", dates)
-        end_date = col2.selectbox("End Date", dates, index=len(dates)-1)
+        start_date = col1.selectbox("Start Date", dates, key="insight_start")
+        end_date = col2.selectbox("End Date", dates, index=len(dates)-1, key="insight_end")
 
         filtered_df = score_df.copy()
         if selected_map != "All":

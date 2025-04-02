@@ -1,34 +1,17 @@
-﻿Date,Map,Start,First Pistol,First Rounds,First Half WR,Second Pistol,Second Rounds,Second Half WR,Atk PP,Def PP,Atk 2nd,Atk 2nd,Outcome,,,,,,,,,,,,,
-21th March 2025,,,,,,,,,,,,,,,,,,,,,,,,,,
-BOOM,Icebox,Attack,0,5,0.42,0,6,0.5,71.43%,16.67%,LL,LL,Loss,,,,,,,,,,,,,
-FearX,Pearl,Attack,0,2,0.17,0,4,0.33,100.00%,11%,LL,LL,Loss,,,,,,,,,,,,,
-NS Redforce,Pearl,Defence,0,8,0.67,0,4,0.33,66.67%,33.33%,LL,LL,Draw,,,,,,,,,,,,,
-T1,Icebox,Attack,0,4,0.33,1,5,0.43,33.33%,25.00%,LL,WW,Loss,,,,,,,,,,,,,
-25th March 2025,,,,,,,,,,,,,,,,,,,,,,,,,,
-NOEZ,Ascent,Defence,1,9,0.75,0,7,0.58,85.70%,25.00%,LL,WW,Win,,,,,,,,,,,,,
-TEC,Ascent,Attack,0,6,0.5,1,10,0.91,80%,33.00%,LL,WW,Win,,,,,,,,,,,,,
-Crest,Split,Defence,0,8,0.67,1,7,0.58,63.64%,50.00%,WW,LL,Win,,,,,,,,,,,,,
-Sharper,Ascent,Defence,1,6,0.5,1,10,0.91,100.00%,0%,WW,WW,Win,,,,,,,,,,,,,
-Murash,Icebox,Attack,1,7,0.58,1,8,0.67,85.71%,42.86%,WW,WW,Win,,,,,,,,,,,,,
-REJECT,Ascent,Attack,0,8,0.67,1,8,0.67,88.89%,33.33%,LL,WW,Win,,,,,,,,,,,,,
-26th March 2025,,,,,,,,,,,,,,,,,,,,,,,,,,
-Team Secret,Ascent,Attack,0,3,0.25,1,7,0.58,75.00%,20.00%,LL,WW,Loss,,,,,,,,,,,,,
-RRQ Academy,Ascent,Attack,1,7,0.67,1,2,0.17,77.78%,0.00%,WW,WL,Loss,,,,,,,,,,,,,
-NS Redforce,Icebox,Defence,1,7,0.67,0,3,0.25,40.00%,40.00%,LL,WL,Loss,,,,,,,,,,,,,
-Mongolz,Ascent,Defence,0,7,0.67,0,5,0.43,83.33%,28.57%,LL,LL,Draw,,,,,,,,,,,,,
-27th March 2025,,,,,,,,,,,,,,,,,,,,,,,,,,
-Mongolz,Fracture,Attack,1,7,0.58,1,9,0.75,87.50%,50%,WW,WW,Win,,,,,,,,,,,,,
-DFM,Ascent,Attack,0,4,0.33,0,3,0.25,66.67%,11%,LL,LL,Loss,,,,,,,,,,,,,
-RRQ,Ascent,Defence,0,0,0,1,6,0.5,66.67%,0.00%,WW,LL,Loss,,,,,,,,,,,,,
-Paper Rex,Fracture,Attack,1,7,0.58,0,4,0.33,70.00%,22.22%,WW,LL,Loss,,,,,,,,,,,,,
-SHERPA,Split,Attack,1,7,0.58,0,5,0.43,87.50%,0.00%,WW,LL,Draw,,,,,,,,,,,,,
-31th March 2025,,,,,,,,,,,,,,,,,,,,,,,,,,
-ThunderGaming,Ascent,Defence,1,9,0.75,0,7,0.58,70.00%,36.00%,LL,WW,Win,,,,,,,,,,,,,
-EDward Gaming,Ascent,Attack,0,6,0.5,0,4,0.33,66.00%,15.00%,LL,LL,Loss,,,,,,,,,,,,,
-Crest,Ascent,Defence,0,2,0.17,0,6,0.5,66.00%,16.67%,LW,LL,Loss,,,,,,,,,,,,,
-NAOS,Ascent,Defence,0,5,0.43,0,6,0.5,70.00%,25.00%,LL,LL,Loss,,,,,,,,,,,,,
-1st April 2025,,,,,,,,,,,,,,,,,,,,,,,,,,
-Mongolz,Icebox,Defence,1,11,0.92,1,8,0.67,80.00%,80%,WW,WW,Win,,,,,,,,,,,,,
-Kronicle Esports,Ascent,Defence,0,7,0.58,1,8,0.67,100.00%,33.33%,WW,LL,Win,,,,,,,,,,,,,
-T1,Icebox,Defence,1,7,0.58,0,5,0.43,50.00%,44.44%,LL,WW,Draw,,,,,,,,,,,,,
-T1,Lotus,Defence,1,5,0.42,1,8,0.67,88.89%,13%,WW,WL,Win,,,,,,,,,,,,,
+Date,Map,Start,First Pistol,First Rounds,First Half WR,Second Pistol,Second Rounds,Second Half WR,Atk PP,Def PP,Atk 2nd,Def  2nd,Outcome
+26th March 2025,,,,,,,,,,,,,
+Team Secret,Ascent,Attack,0,3,0.25,1,7,0.58,75.00%,20.00%,LL,WW,Loss
+RRQ Academy,Ascent,Attack,1,7,0.67,1,2,0.17,77.78%,0.00%,WW,WL,Loss
+NS Redforce,Icebox,Defence,1,7,0.67,0,3,0.25,40.00%,40.00%,LL,WL,Loss
+Mongolz,Ascent,Defence,0,7,0.67,0,5,0.43,83.33%,28.57%,LL,LL,Draw
+27th March 2025,,,,,,,,,,,,,
+Mongolz,Fracture,Attack,1,7,0.58,1,9,0.75,87.50%,50%,WW,WW,Win
+DFM,Ascent,Attack,0,4,0.33,0,3,0.25,66.67%,11%,LL,LL,Loss
+RRQ,Ascent,Defence,0,0,0,1,6,0.5,66.67%,0.00%,WW,LL,Loss
+Paper Rex,Fracture,Attack,1,7,0.58,0,4,0.33,70.00%,22.22%,WW,LL,Loss
+Sherpa,Split,Attack,1,7,0.58,0,5,0.43,87.50%,0.00%,WW,LL,Win
+1st April 2025,,,,,,,,,,,,,
+Mongolz,Icebox,Defence,1,11,0.92,1,8,0.67,80.00%,80%,WW,WW,Win
+Kronicle Esports,Ascent,Defence,0,7,0.58,1,8,0.67,100.00%,33.33%,WW,LL,Win
+T1,Icebox,Defence,1,7,0.58,0,5,0.43,50.00%,44.44%,LL,WW,Draw
+T1,Lotus,Defence,1,5,0.42,1,8,0.67,88.89%,13%,WW,WL,Win

@@ -1,14 +1,4 @@
-Date,Team,Map,Start,First Pistol,First Rounds,First Half WR,Second Pistol,Second Rounds,Second Half WR,Atk PP,Def PP,Atk 2nd,Atk 2nd.1,Outcome
-2025-03-21,BOOM,Icebox,Attack,0.0,5.0,0.42,0.0,6.0,0.5,71.43%,16.67%,LL,LL,Loss
-2025-03-21,FearX,Pearl,Attack,0.0,2.0,0.17,0.0,4.0,0.33,100.00%,11%,LL,LL,Loss
-2025-03-21,NS Redforce,Pearl,Defence,0.0,8.0,0.67,0.0,4.0,0.33,66.67%,33.33%,LL,LL,Draw
-2025-03-21,T1,Icebox,Attack,0.0,4.0,0.33,1.0,5.0,0.43,33.33%,25.00%,LL,WW,Loss
-2025-03-25,NOEZ,Ascent,Defence,1.0,9.0,0.75,0.0,7.0,0.58,85.70%,25.00%,LL,WW,Win
-2025-03-25,TEC,Ascent,Attack,0.0,6.0,0.5,1.0,10.0,0.91,80%,33.00%,LL,WW,Win
-2025-03-25,Crest,Split,Defence,0.0,8.0,0.67,1.0,7.0,0.58,63.64%,50.00%,WW,LL,Win
-2025-03-25,Sharper,Ascent,Defence,1.0,6.0,0.5,1.0,10.0,0.91,100.00%,0%,WW,WW,Win
-2025-03-25,Murash,Icebox,Attack,1.0,7.0,0.58,1.0,8.0,0.67,85.71%,42.86%,WW,WW,Win
-2025-03-25,REJECT,Ascent,Attack,0.0,8.0,0.67,1.0,8.0,0.67,88.89%,33.33%,LL,WW,Win
+Date,Team,Map,Start,First Pistol,First Rounds,First Half WR,Second Pistol,Second Rounds,Second Half WR,Atk PP,Def PP,Atk 2nd,Def  2nd,Outcome
 2025-03-26,Team Secret,Ascent,Attack,0.0,3.0,0.25,1.0,7.0,0.58,75.00%,20.00%,LL,WW,Loss
 2025-03-26,RRQ Academy,Ascent,Attack,1.0,7.0,0.67,1.0,2.0,0.17,77.78%,0.00%,WW,WL,Loss
 2025-03-26,NS Redforce,Icebox,Defence,1.0,7.0,0.67,0.0,3.0,0.25,40.00%,40.00%,LL,WL,Loss
@@ -17,11 +7,7 @@ Date,Team,Map,Start,First Pistol,First Rounds,First Half WR,Second Pistol,Second
 2025-03-27,DFM,Ascent,Attack,0.0,4.0,0.33,0.0,3.0,0.25,66.67%,11%,LL,LL,Loss
 2025-03-27,RRQ,Ascent,Defence,0.0,0.0,0.0,1.0,6.0,0.5,66.67%,0.00%,WW,LL,Loss
 2025-03-27,Paper Rex,Fracture,Attack,1.0,7.0,0.58,0.0,4.0,0.33,70.00%,22.22%,WW,LL,Loss
-2025-03-27,SHERPA,Split,Attack,1.0,7.0,0.58,0.0,5.0,0.43,87.50%,0.00%,WW,LL,Draw
-2025-03-31,ThunderGaming,Ascent,Defence,1.0,9.0,0.75,0.0,7.0,0.58,70.00%,36.00%,LL,WW,Win
-2025-03-31,EDward Gaming,Ascent,Attack,0.0,6.0,0.5,0.0,4.0,0.33,66.00%,15.00%,LL,LL,Loss
-2025-03-31,Crest,Ascent,Defence,0.0,2.0,0.17,0.0,6.0,0.5,66.00%,16.67%,LW,LL,Loss
-2025-03-31,NAOS,Ascent,Defence,0.0,5.0,0.43,0.0,6.0,0.5,70.00%,25.00%,LL,LL,Loss
+2025-03-27,Sherpa,Split,Attack,1.0,7.0,0.58,0.0,5.0,0.43,87.50%,0.00%,WW,LL,Win
 2025-04-01,Mongolz,Icebox,Defence,1.0,11.0,0.92,1.0,8.0,0.67,80.00%,80%,WW,WW,Win
 2025-04-01,Kronicle Esports,Ascent,Defence,0.0,7.0,0.58,1.0,8.0,0.67,100.00%,33.33%,WW,LL,Win
 2025-04-01,T1,Icebox,Defence,1.0,7.0,0.58,0.0,5.0,0.43,50.00%,44.44%,LL,WW,Draw
