@@ -137,17 +137,19 @@ with tabs[2]:
     st.subheader("📈 Round Insights from cleaned_score.csv")
     if not score_df.empty:
         maps = sorted(score_df['Map'].dropna().unique())
-        teams = sorted(score_df['Team'].dropna().unique())
+        dates = sorted(score_df['Date'].dropna().unique())
 
         col1, col2 = st.columns(2)
         selected_map = col1.selectbox("Filter by Map", ["All"] + maps)
-        selected_team = col2.selectbox("Filter by Team", ["All"] + teams)
+        start_date = col2.selectbox("Start Date", dates)
+        end_date = col2.selectbox("End Date", dates, index=len(dates)-1)
 
         filtered_df = score_df.copy()
         if selected_map != "All":
             filtered_df = filtered_df[filtered_df['Map'] == selected_map]
-        if selected_team != "All":
-            filtered_df = filtered_df[filtered_df['Team'] == selected_team]
+
+        if start_date and end_date:
+            filtered_df = filtered_df[(filtered_df['Date'] >= start_date) & (filtered_df['Date'] <= end_date)]
 
         st.dataframe(filtered_df, use_container_width=True)
 
