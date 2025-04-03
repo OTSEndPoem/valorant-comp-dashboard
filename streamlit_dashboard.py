@@ -4,24 +4,43 @@ from PIL import Image
 import os
 import plotly.express as px
 from data_cleaner import clean_scrim_form
+import base64
+
+def get_base64_image(path):
+    with open(path, "rb") as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
 
 st.set_page_config(page_title="Valorant Scrim Dashboard", layout="wide")
-st.markdown("""
+encoded_bg = get_base64_image("wallp.png")
+st.markdown(f"""
     <style>
-    body {
-        background-color: #000000;
+    body {{
+        background-image: url("data:image/jpg;base64,{encoded_bg}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
         color: #ffffff;
-    }
-    h1, h2, h3, .stTabs, .stButton {
+    }}
+
+    .stApp {{
+        background-color: rgba(0, 0, 0, 0.85);
+    }}
+
+    .block-container {{
+        padding: 2rem;
+        border-radius: 12px;
+    }}
+
+    h1, h2, h3, .stTabs, .stButton {{
         font-family: 'Inter', sans-serif;
         color: #FDB913;
-    }
-    .stDataFrame, .stTable {
+    }}
+
+    .stDataFrame, .stTable {{
         background-color: #1a1a1a;
-    }
-    .block-container {
-        padding-top: 2rem;
-    }
+    }}
     </style>
 """, unsafe_allow_html=True)
 
@@ -44,7 +63,7 @@ except Exception as e:
     score_df = pd.DataFrame()
     st.warning(f"⚠️ Couldn't load cleaned_score.csv: {e}")
 
-tabs = st.tabs(["📊 Overview", "🧩 Map Composition Win Rates", "📈 Round Insights"])
+tabs = st.tabs(["📊 Overview", "🧩 Map Composition Win Rates", "📈 Round Insights","🔫 Pistol Insights"])
 
 # 📊 OVERVIEW TAB
 with tabs[0]:
@@ -463,3 +482,123 @@ with tabs[2]:
             )
 
             st.plotly_chart(fig_pp, use_container_width=True)
+
+from datetime import datetime
+
+from datetime import datetime
+
+# 📊 GRAPH INSIGHTS TAB
+with tabs[3]:
+    st.subheader("🔫 Pistol Round Win Rate by Map")
+
+    if not score_df.empty:
+        # Ensure date column is in datetime format
+        score_df['Date'] = pd.to_datetime(score_df['Date'], errors='coerce')
+
+        # Date filter
+        min_date = score_df['Date'].min()
+        max_date = score_df['Date'].max()
+
+        start_date, end_date = st.date_input(
+            "Select Date Range",
+            value=(min_date, max_date),
+            min_value=min_date,
+            max_value=max_date
+        )
+
+        # Filter dataframe by date range
+        filtered_df = score_df[(score_df['Date'] >= pd.to_datetime(start_date)) & (score_df['Date'] <= pd.to_datetime(end_date))]
+
+        # Calculate pistol stats
+        filtered_df['Total Pistols Won'] = filtered_df['First Pistol'] + filtered_df['Second Pistol']
+        grouped = filtered_df.groupby('Map').agg(
+            Total_Pistols_Won=('Total Pistols Won', 'sum'),
+            Total_Pistols_Played=('Map', 'count')
+        ).reset_index()
+
+        grouped['Total_Pistols_Played'] *= 2  # 2 pistol rounds per map
+        grouped['Pistol Win Rate (%)'] = (grouped['Total_Pistols_Won'] / grouped['Total_Pistols_Played']) * 100
+
+        grouped = grouped.sort_values(by='Pistol Win Rate (%)', ascending=False)
+
+        # Plotly bar chart
+        fig_pistol = px.bar(
+            grouped,
+            x='Map',
+            y='Pistol Win Rate (%)',
+            text=grouped['Pistol Win Rate (%)'].apply(lambda x: f"{x:.1f}%"),
+            color='Pistol Win Rate (%)',
+            color_continuous_scale=['#ff0000', '#FDB913'],
+            title="Pistol Win Rates by Map"
+        )
+
+        fig_pistol.update_traces(
+            textposition='outside',
+            marker_line_color='#000000',
+            marker_line_width=1.2
+        )
+
+        fig_pistol.update_layout(
+            plot_bgcolor='#000000',
+            paper_bgcolor='#000000',
+            font=dict(family='Inter', size=14, color='#FDB913'),
+            title_font=dict(size=20, color='#FDB913'),
+            xaxis=dict(tickfont=dict(color='#ffffff'), gridcolor='#333333'),
+            yaxis=dict(range=[0, 100], title='Win Rate (%)', title_font=dict(color='#FDB913'), tickfont=dict(color='#ffffff'), gridcolor='#333333')
+        )
+
+        st.plotly_chart(fig_pistol, use_container_width=True)
+
+        ## --- 2nd Round Conversion Pie Chart by Map (filtered for pistol wins only) ---
+        st.markdown("### 🍰 2nd Round Conversion (WW/WL Only)")
+
+        if 'Atk 2nd' in filtered_df.columns and 'Def 2nd' in filtered_df.columns:
+            conversion_data = pd.concat([
+                filtered_df[['Map', 'Atk 2nd']].rename(columns={'Atk 2nd': 'Conversion'}),
+                filtered_df[['Map', 'Def 2nd']].rename(columns={'Def 2nd': 'Conversion'})
+            ])
+
+            map_list = conversion_data['Map'].dropna().unique()
+            selected_map = st.selectbox("Select a map to view conversion success (after pistol win):", sorted(map_list))
+
+            map_conversions = conversion_data[conversion_data['Map'] == selected_map]
+            filtered = map_conversions[map_conversions['Conversion'].isin(['WW', 'WL'])]
+
+            if filtered.empty:
+                st.info("No conversion attempts found for pistol round wins on this map.")
+            else:
+                pie_data = filtered['Conversion'].value_counts(normalize=True).reset_index()
+                pie_data.columns = ['Conversion', 'Percentage']
+                pie_data['Percentage'] *= 100
+
+                fig_pie = px.pie(
+                    pie_data,
+                    names='Conversion',
+                    values='Percentage',
+                    title=f"Pistol Conversion Rate - {selected_map} (WW vs WL)",
+                    color='Conversion',
+                    color_discrete_map={
+                        'WW': '#22c55e',  # green
+                        'WL': '#facc15'   # yellow
+                    },
+                    hole=0.4
+                )
+
+                fig_pie.update_traces(
+                    textinfo='label+percent',
+                    marker_line_color='#000000',
+                    marker_line_width=1.5
+                )
+
+                fig_pie.update_layout(
+                    plot_bgcolor='#000000',
+                    paper_bgcolor='#000000',
+                    font=dict(family='Inter', size=14, color='#FDB913'),
+                    title_font=dict(size=20, color='#FDB913'),
+                    legend=dict(font=dict(color='#ffffff'))
+                )
+
+                st.plotly_chart(fig_pie, use_container_width=True)
+
+    else:
+        st.info("No data available for pistol or 2nd round conversion insights.")
