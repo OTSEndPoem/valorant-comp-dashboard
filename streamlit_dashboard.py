@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+from PIL import Image
+import os
 import plotly.express as px
 from data_cleaner import clean_scrim_form
 
@@ -64,10 +66,58 @@ with tabs[0]:
         ).reset_index()
         summary['Win Rate'] = summary['Wins'] / summary['Games']
         st.dataframe(summary.sort_values(by='Map'), use_container_width=True)
+        # 📊 Map Win Rate Horizontal Bar Chart
+        st.markdown("### 🗺️ Map Win Rates")
+
+        winrate_df = summary[['Map', 'Win Rate']].dropna().copy()
+        winrate_df['Win Rate %'] = winrate_df['Win Rate'] * 100
+        winrate_df = winrate_df.sort_values(by='Win Rate %', ascending=False)
+
+        fig_map_wr = px.bar(
+            winrate_df,
+            x='Win Rate %',
+            y='Map',
+            orientation='h',
+            text=winrate_df['Win Rate %'].apply(lambda x: f"{x:.1f}%"),
+            title="Map Win Rates",
+            labels={'Win Rate %': 'Win Rate (%)', 'Map': 'Map'},
+            color='Win Rate %',
+            color_continuous_scale=['#ff0000', '#FDB913']
+        )
+
+        fig_map_wr.update_traces(
+            textposition='outside',
+            marker_line_color='#000000',
+            marker_line_width=1.2
+        )
+
+        fig_map_wr.update_layout(
+            plot_bgcolor='#000000',
+            paper_bgcolor='#000000',
+            font=dict(family='Inter', size=14, color='#FDB913'),
+            title_font=dict(size=20, color='#FDB913'),
+            yaxis=dict(
+                tickfont=dict(color='#ffffff'),
+                categoryorder='total ascending',
+                gridcolor='#333333'
+            ),
+            xaxis=dict(
+                title='Win Rate (%)',
+                title_font=dict(color='#FDB913'),
+                tickfont=dict(color='#ffffff'),
+                gridcolor='#333333',
+                range=[0, 100]
+            )
+        )
+
+        st.plotly_chart(fig_map_wr, use_container_width=True)
+
     else:
         st.info("No scrim data in this date range.")
 
-# 🧩 MAP COMPOSITION TAB
+### --- Composition Win Rate Chart (Styled like rib.gg) ---
+
+# This block should only be inside the Map Composition tab
 with tabs[1]:
     st.subheader("Top 5-agent Composition Win Rates by Map")
     if not form_df.empty:
@@ -81,7 +131,7 @@ with tabs[1]:
         selected_map = st.selectbox("Select a map:", valid_maps)
 
         teams = []
-        filtered_dates = set(filtered_score['Date'])
+        filtered_dates = set(score_df['Date'])
         for i in range(0, len(form_df) - 4, 5):
             block = form_df.iloc[i:i+5]
             map_match = block['Column 1'].iloc[0]
@@ -123,45 +173,66 @@ with tabs[1]:
             grouped['Comp String'] = grouped['Composition'].apply(lambda x: '-'.join(x))
             grouped = grouped.sort_values(by='Win Rate %', ascending=False).head(15)
 
+        def get_agent_icon(agent_name):
+            path = f"assets/{agent_name}.png"
+            if os.path.exists(path):
+                return Image.open(path)
+            return None
 
-            grouped['Win Rate'] = grouped['wins'] / grouped['games']
-            grouped['Comp String'] = grouped['Composition'].apply(lambda x: '-'.join(x))
-            grouped = grouped.sort_values(by='Win Rate', ascending=False).head(15)
+        # Add a column with the first agent's icon
+        grouped['Win Rate %'] = grouped['wins'] / grouped['games'] * 100
+        grouped['Comp String'] = grouped['Composition'].apply(lambda x: '-'.join(x))
+        grouped = grouped.sort_values(by='Win Rate %', ascending=False).head(15)
 
-            fig = px.bar(
-                grouped,
-                x='Win Rate %',
-                y='Comp String',
-                text=grouped.apply(
-                    lambda row: f"{row['Win Rate %']:.1f}% ({row['wins']}W-{row['losses']}L-{row['draws']}D / {row['games']} games)",
-                    axis=1
-                ),
-                orientation='h',
-                title=f"Top Compositions on {selected_map}",
-                labels={'Win Rate %': 'Win Rate (%)', 'Comp String': 'Agent Composition'},
-                color_discrete_sequence=['#FDB913']
-            )
+        # 👇 Add this directly below — no extra indentation
+        grouped['First Agent'] = grouped['Composition'].apply(lambda x: x[0])
+        grouped['Icon Path'] = grouped['First Agent'].apply(lambda agent: f"assets/{agent}.png" if os.path.exists(f"assets/{agent}.png") else None)
 
-            fig.update_traces(
-                textposition='outside',
-                marker_line_color='#333333',
-                marker_line_width=1.2
-            )
+        fig_comp = px.bar(
+            grouped,
+            x='Win Rate %',
+            y='Comp String',
+            text=grouped['Win Rate %'].apply(lambda x: f"{x:.2f}%"),
+            hover_data={'games': True, 'wins': True, 'losses': True, 'draws': True},
+            orientation='h',
+            title=f"Top Compositions on {selected_map}",
+            labels={'Win Rate %': 'Win Rate (%)', 'Comp String': 'Agent Composition'},
+            color_discrete_sequence=['#FDB913']
+        )
 
-            fig.update_layout(
-                plot_bgcolor='#000000',
-                paper_bgcolor='#000000',
-                font=dict(color='#FDB913', family='Inter'),
-                title_font=dict(color='#FDB913', size=20),
-                yaxis=dict(categoryorder='total ascending', gridcolor='#333333'),
-                xaxis=dict(range=[0, 100], gridcolor='#333333')
-            )
+        fig_comp.update_traces(
+            textposition='outside',
+            marker_line_color='#000000',
+            marker_line_width=0.5,
+            customdata=grouped[['games']].values,
+            hovertemplate='%{y}<br>Win Rate: %{x:.2f}%<br>Games Played: %{customdata[0]}'
+        )
 
-            st.plotly_chart(fig, use_container_width=True)
-        else:
-            st.info("No valid compositions found for this map.")
-    else:
-        st.info("form.csv not available or empty.")
+        fig_comp.update_layout(
+            plot_bgcolor='#000000',
+            paper_bgcolor='#000000',
+            font=dict(color='#FDB913', family='Inter'),
+            title_font=dict(size=20, color='#FDB913'),
+            margin=dict(t=40, l=100, r=40, b=20),
+            yaxis=dict(
+                categoryorder='total ascending',
+                tickfont=dict(color='#ffffff'),
+                showgrid=False,
+                showline=False,
+                zeroline=False
+            ),
+            xaxis=dict(
+                showgrid=False,
+                showline=False,
+                zeroline=False,
+                visible=False
+            ),
+            showlegend=False
+        )
+
+
+        st.plotly_chart(fig_comp, use_container_width=True)
+
 
 # 📈 ROUND INSIGHTS TAB
 with tabs[2]:
