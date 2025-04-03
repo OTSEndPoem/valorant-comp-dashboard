@@ -210,10 +210,17 @@ with tabs[2]:
         }
 
         if 'Atk PP %' in filtered_df.columns:
-            agg_dict['Atk_PP_Success'] = ('Atk PP %', lambda x: pd.to_numeric(x.str.replace('%',''), errors='coerce').mean())
+            agg_dict['Atk_PP_Success'] = (
+                'Atk PP %',
+                lambda x: pd.to_numeric(x.fillna('0').str.replace('%', ''), errors='coerce').mean()
+            )
 
         if 'Def PP %' in filtered_df.columns:
-            agg_dict['Def_PP_Success'] = ('Def PP %', lambda x: pd.to_numeric(x.str.replace('%',''), errors='coerce').mean())
+            agg_dict['Def_PP_Success'] = (
+                'Def PP %',
+                lambda x: pd.to_numeric(x.fillna('0').str.replace('%', ''), errors='coerce').mean()
+            )
+
 
         summary = filtered_df.groupby('Map').agg(**agg_dict).reset_index()
         # Calculate Round Win Rate using (Atk + Def) / 2
@@ -225,14 +232,38 @@ with tabs[2]:
         # Save raw numeric values for chart use (before formatting to %)
         summary['Raw_Atk_WR'] = summary['Avg_Atk_WR']
         summary['Raw_Def_WR'] = summary['Avg_Def_WR']
+        summary['Raw_Round_WR'] = (summary['Raw_Atk_WR'] + summary['Raw_Def_WR']) / 2
+        summary['Round WR'] = summary['Raw_Round_WR'].apply(lambda x: f"{x * 100:.1f}%" if pd.notnull(x) else "-")
+
+
 
         summary['Avg_Atk_WR'] = summary['Avg_Atk_WR'].apply(lambda x: f"{x * 100:.1f}%" if pd.notnull(x) else "-")
         summary['Avg_Def_WR'] = summary['Avg_Def_WR'].apply(lambda x: f"{x * 100:.1f}%" if pd.notnull(x) else "-")
+        display_cols = ['Map', 'Games', 'Wins', 'Draws', 'Losses', 'Avg_Atk_WR', 'Avg_Def_WR','Round WR']
 
+        def highlight_win_rates(val, threshold_low=40, threshold_high=60):
+            try:
+                val = float(val.replace('%', ''))
+            except:
+                return ''
+            if val >= threshold_high:
+                return 'background-color: #14532d; color: white;'  # green
+            elif val < threshold_low:
+                return 'background-color: #7f1d1d; color: white;'  # red
+            else:
+                return 'background-color: #78350f; color: white;'  # amber
+
+        styled_df = summary[display_cols].style\
+            .applymap(highlight_win_rates, subset=['Avg_Atk_WR', 'Avg_Def_WR','Round WR'])\
+            .set_properties(**{'text-align': 'center'})\
+            .set_table_styles([{
+                'selector': 'th',
+                'props': [('background-color', '#1a1a1a'), ('color', '#FDB913'), ('text-align', 'center')]
+            }])
 
         # Only show selected columns in the summary table (hide raw WRs)
         display_cols = ['Map', 'Games', 'Wins', 'Draws', 'Losses', 'Avg_Atk_WR', 'Avg_Def_WR','Round WR']
-        st.dataframe(summary[display_cols], use_container_width=True)
+        st.dataframe(styled_df, use_container_width=True)
 
         # Visualize Attack vs Defense Win Rates
         # Prepare data
@@ -280,3 +311,84 @@ with tabs[2]:
         )
 
         st.plotly_chart(fig, use_container_width=True)
+
+        #--- Post-Plant Success Rate Bar Chart ---
+
+        if 'Atk_PP_Success' in summary.columns and 'Def_PP_Success' in summary.columns:
+
+            st.markdown("### 📊 Post-Plant Success Rate by Map")
+
+            label_map = {
+                "Atk_PP_Success": "Post Plant",
+                "Def_PP_Success": "Retakes"
+            }
+
+            sort_label = st.selectbox("Sort by", list(label_map.values()), index=0)
+            sort_col = [k for k, v in label_map.items() if v == sort_label][0]
+            sort_order = st.radio("Order", ["Descending", "Ascending"], horizontal=True)
+            ascending = sort_order == "Ascending"
+
+            pp_df = summary[['Map', 'Atk_PP_Success', 'Def_PP_Success']].copy()
+            pp_df = pp_df.fillna(0)
+
+            pp_df['Atk_PP_Success'] = pd.to_numeric(pp_df['Atk_PP_Success'], errors='coerce')
+            pp_df['Def_PP_Success'] = pd.to_numeric(pp_df['Def_PP_Success'], errors='coerce')
+            if pp_df['Atk_PP_Success'].max() <= 1.0:
+                pp_df['Atk_PP_Success'] *= 100
+                pp_df['Def_PP_Success'] *= 100
+
+            # Sort before renaming columns
+            pp_df = pp_df.sort_values(by=sort_col, ascending=ascending)
+            pp_df['Map'] = pd.Categorical(pp_df['Map'], categories=pp_df['Map'], ordered=True)
+
+            # Rename for nicer legend labels
+            pp_df.rename(columns=label_map, inplace=True)
+
+            pp_df_long = pp_df.melt(id_vars='Map', var_name='Side', value_name='Post-Plant Success (%)')
+
+            # Plot
+            fig_pp = px.bar(
+                pp_df_long,
+                x='Map',
+                y='Post-Plant Success (%)',
+                color='Side',
+                barmode='stack',
+                text=pp_df_long['Post-Plant Success (%)'].apply(lambda x: f"{x:.1f}%"),
+                title="Post-Plant Success Rate (Stacked Atk + Def)",
+                color_discrete_map={
+                    'Post Plant': '#FDB913',
+                    'Retakes': '#ffffff'
+                }
+            )
+
+            fig_pp.update_traces(
+                textposition='inside',
+                marker_line_color='#333333',
+                marker_line_width=1.2
+            )
+
+            fig_pp.update_layout(
+                plot_bgcolor='#000000',
+                paper_bgcolor='#000000',
+                font=dict(family='Inter, sans-serif', size=14, color='#FDB913'),
+                title_font=dict(size=20, color='#FDB913'),
+                xaxis=dict(
+                    title='Map',
+                    title_font=dict(size=16, color='#FDB913'),
+                    tickfont=dict(size=14, color='#ffffff'),
+                    tickangle=-25,
+                    gridcolor='#333333'
+                ),
+                yaxis=dict(
+                    title='Post-Plant Success (%)',
+                    title_font=dict(size=16, color='#FDB913'),
+                    tickfont=dict(size=14, color='#ffffff'),
+                    gridcolor='#333333',
+                    range=[0, 100]
+                ),
+                legend=dict(
+                    font=dict(size=13, color='#ffffff')
+                )
+            )
+
+            st.plotly_chart(fig_pp, use_container_width=True)
