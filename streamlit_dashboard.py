@@ -63,7 +63,7 @@ except Exception as e:
     score_df = pd.DataFrame()
     st.warning(f"⚠️ Couldn't load cleaned_score.csv: {e}")
 
-tabs = st.tabs(["📊 Overview", "🧩 Map Composition Win Rates", "📈 Round Insights","🔫 Pistol Insights"])
+tabs = st.tabs(["📊 Overview", "🧩 Map Composition Win Rates", "📈 Round Insights","🔫 Pistol Insights","🔢 Player Stats"])
 
 # 📊 OVERVIEW TAB
 with tabs[0]:
@@ -549,56 +549,190 @@ with tabs[3]:
 
         st.plotly_chart(fig_pistol, use_container_width=True)
 
-        ## --- 2nd Round Conversion Pie Chart by Map (filtered for pistol wins only) ---
-        st.markdown("### 🍰 2nd Round Conversion (WW/WL Only)")
+        # --- 2nd Round Conversion Pie Charts (WW/WL and LL/LW) ---
+        # --- 2nd Round Conversion Pie Charts (WW/WL and LL/LW) ---
+        st.markdown("### 🍰 2nd Round Outcomes by Map")
 
         if 'Atk 2nd' in filtered_df.columns and 'Def 2nd' in filtered_df.columns:
-            conversion_data = pd.concat([
-                filtered_df[['Map', 'Atk 2nd']].rename(columns={'Atk 2nd': 'Conversion'}),
-                filtered_df[['Map', 'Def 2nd']].rename(columns={'Def 2nd': 'Conversion'})
-            ])
 
-            map_list = conversion_data['Map'].dropna().unique()
-            selected_map = st.selectbox("Select a map to view conversion success (after pistol win):", sorted(map_list))
+             conversion_data = pd.concat([
+                 filtered_df[['Map', 'Atk 2nd']].rename(columns={'Atk 2nd': 'Conversion'}),
+                 filtered_df[['Map', 'Def 2nd']].rename(columns={'Def 2nd': 'Conversion'})
+             ])
 
-            map_conversions = conversion_data[conversion_data['Map'] == selected_map]
-            filtered = map_conversions[map_conversions['Conversion'].isin(['WW', 'WL'])]
+             map_list = conversion_data['Map'].dropna().unique()
+             selected_map = st.selectbox("Select a map to view 2nd round breakdown:", sorted(map_list))
 
-            if filtered.empty:
-                st.info("No conversion attempts found for pistol round wins on this map.")
-            else:
-                pie_data = filtered['Conversion'].value_counts(normalize=True).reset_index()
-                pie_data.columns = ['Conversion', 'Percentage']
-                pie_data['Percentage'] *= 100
+             map_conversions = conversion_data[conversion_data['Map'] == selected_map]
 
-                fig_pie = px.pie(
-                    pie_data,
-                    names='Conversion',
-                    values='Percentage',
-                    title=f"Pistol Conversion Rate - {selected_map} (WW vs WL)",
-                    color='Conversion',
-                    color_discrete_map={
-                        'WW': '#22c55e',  # green
-                        'WL': '#facc15'   # yellow
-                    },
-                    hole=0.4
-                )
+             col1, col2 = st.columns(2)
 
-                fig_pie.update_traces(
-                    textinfo='label+percent',
-                    marker_line_color='#000000',
-                    marker_line_width=1.5
-                )
+             with col1:
+                 st.markdown("#### 🔁 After Winning Pistol (WW/WL)")
+                 filtered_win = map_conversions[map_conversions['Conversion'].isin(['WW', 'WL'])]
 
-                fig_pie.update_layout(
-                    plot_bgcolor='#000000',
-                    paper_bgcolor='#000000',
-                    font=dict(family='Inter', size=14, color='#FDB913'),
-                    title_font=dict(size=20, color='#FDB913'),
-                    legend=dict(font=dict(color='#ffffff'))
-                )
+                 if filtered_win.empty:
+                     st.info("No conversion attempts found for pistol round wins on this map.")
+                 else:
+                     pie_data_win = filtered_win['Conversion'].value_counts(normalize=True).reset_index()
+                     pie_data_win.columns = ['Conversion', 'Percentage']
+                     pie_data_win['Percentage'] *= 100
 
-                st.plotly_chart(fig_pie, use_container_width=True)
+                     fig_pie_win = px.pie(
+                         pie_data_win,
+                         names='Conversion',
+                         values='Percentage',
+                         title=f"Pistol Conversion - {selected_map}",
+                         color='Conversion',
+                         color_discrete_map={
+                             'WW': '#FDB913',
+                             'WL': '#666666'
+                         },
+                         hole=0.4
+                     )
+
+                     fig_pie_win.update_traces(
+                         textinfo='label+percent',
+                         marker_line_color='#000000',
+                         marker_line_width=1.5
+                     )
+
+                     fig_pie_win.update_layout(
+                         plot_bgcolor='#000000',
+                         paper_bgcolor='#000000',
+                         font=dict(family='Inter', size=14, color='#FDB913'),
+                         title_font=dict(size=18, color='#FDB913'),
+                         legend=dict(font=dict(color='#ffffff'))
+                     )
+
+                     st.plotly_chart(fig_pie_win, use_container_width=True)
+
+             with col2:
+                 st.markdown("#### 🔁 After Losing Pistol (LL/LW)")
+                 filtered_loss = map_conversions[map_conversions['Conversion'].isin(['LL', 'LW'])]
+
+                 if filtered_loss.empty:
+                     st.info("No eco round outcomes found for pistol round losses on this map.")
+                 else:
+                     pie_data_loss = filtered_loss['Conversion'].value_counts(normalize=True).reset_index()
+                     pie_data_loss.columns = ['Conversion', 'Percentage']
+                     pie_data_loss['Percentage'] *= 100
+
+                     fig_pie_loss = px.pie(
+                         pie_data_loss,
+                         names='Conversion',
+                         values='Percentage',
+                         title=f"Eco Round Outcomes - {selected_map}",
+                         color='Conversion',
+                         color_discrete_map={
+                             'LL': '#444444',
+                             'LW': '#3b82f6'
+                         },
+                         hole=0.4
+                     )
+
+                     fig_pie_loss.update_traces(
+                         textinfo='label+percent',
+                         marker_line_color='#000000',
+                         marker_line_width=1.5
+                     )
+
+                     fig_pie_loss.update_layout(
+                         plot_bgcolor='#000000',
+                         paper_bgcolor='#000000',
+                         font=dict(family='Inter', size=14, color='#FDB913'),
+                         title_font=dict(size=18, color='#FDB913'),
+                         legend=dict(font=dict(color='#ffffff'))
+                     )
+
+                     st.plotly_chart(fig_pie_loss, use_container_width=True)
 
     else:
-        st.info("No data available for pistol or 2nd round conversion insights.")
+         st.info("No data available for pistol or 2nd round conversion insights.")
+
+
+## 🔢 PLAYER STATS TAB
+with tabs[4]:
+    st.subheader("🧑‍💼 Player Agent Stats")
+
+    try:
+        player_df = pd.read_csv("form.csv")
+    except Exception as e:
+        st.warning(f"Could not load player data: {e}")
+        player_df = pd.DataFrame()
+
+    if not player_df.empty:
+        player_df['Date'] = pd.to_datetime(player_df['Date'], errors='coerce')
+        player_df = player_df.dropna(subset=['Date'])
+
+        all_players = sorted(player_df['Player'].dropna().unique())
+        all_maps = sorted(player_df['Column 1'].dropna().unique())
+
+        min_date = player_df['Date'].min().date()
+        max_date = player_df['Date'].max().date()
+
+        col1, col2 = st.columns(2)
+        selected_player = col1.selectbox("Select a player:", all_players)
+        start_date = col1.date_input("Start date:", min_value=min_date, max_value=max_date, value=min_date)
+        end_date = col2.date_input("End date:", min_value=min_date, max_value=max_date, value=max_date)
+        selected_map = col2.selectbox("Filter by Map:", ["All"] + all_maps)
+
+        filtered = player_df[
+            (player_df['Player'] == selected_player) &
+            (player_df['Date'].dt.date >= start_date) &
+            (player_df['Date'].dt.date <= end_date)
+        ]
+
+        if selected_map != "All":
+            filtered = filtered[filtered['Column 1'] == selected_map]
+
+        if not filtered.empty:
+            agent_stats = filtered.groupby('Agent').agg(
+                Rounds=('Rounds', 'sum'),
+                Kills=('Kills', 'sum'),
+                Deaths=('Deaths', 'sum'),
+                Assists=('Assists', 'sum'),
+                ACS=('ACS', 'mean'),
+                FK=('FK', 'sum'),
+                Plants=('Plants', 'sum')
+            ).reset_index()
+
+            agent_stats['K/D Ratio'] = agent_stats['Kills'] / agent_stats['Deaths'].replace(0, float('nan'))
+            agent_stats['K+A per Round'] = (agent_stats['Kills'] + agent_stats['Assists']) / agent_stats['Rounds'].replace(0, float('nan'))
+
+            display_df = agent_stats.round(2)[['Agent', 'Rounds', 'Kills', 'Deaths', 'Assists', 'ACS', 'FK', 'Plants', 'K/D Ratio', 'K+A per Round']]
+
+            st.markdown(f"### 🔍 Agent Performance for {selected_player} from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}")
+            st.dataframe(display_df, use_container_width=True)
+
+        else:
+            st.info("No data for this player in the selected filters.")
+
+    else:
+        st.warning("No player stats found in form.csv")
+
+
+# Footer in bottom-right corner
+# Full-width footer pinned to bottom
+st.markdown("""
+    <style>
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #000000;
+            color: #FDB913;
+            text-align: center;
+            font-size: 13px;
+            font-family: Inter, sans-serif;
+            padding: 0.5rem 0;
+            opacity: 0.8;
+            z-index: 9999;
+        }
+    </style>
+    <div class="footer">
+        Made by: <b>Ominous</b> | X:
+        <a href="https://x.com/_SushantJha" target="_blank" style="color: #FDB913; text-decoration: none;">@_SushantJha</a>
+    </div>
+""", unsafe_allow_html=True)
