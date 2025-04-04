@@ -403,10 +403,14 @@ with tabs[2]:
         st.plotly_chart(fig, use_container_width=True)
 
         #--- Post-Plant Success Rate Bar Chart ---
-
-        if 'Atk_PP_Success' in summary.columns and 'Def_PP_Success' in summary.columns:
-
+        if 'Atk_PP_Success' in score_df.columns and 'Def_PP_Success' in score_df.columns:
             st.markdown("### 📊 Post-Plant Success Rate by Map")
+
+            # Fresh aggregation directly from original score_df
+            pp_df = score_df.groupby('Map').agg({
+                'Atk_PP_Success': lambda x: pd.to_numeric(x.astype(str).str.replace('%','', regex=False), errors='coerce').mean(),
+                'Def_PP_Success': lambda x: pd.to_numeric(x.astype(str).str.replace('%','', regex=False), errors='coerce').mean()
+            }).reset_index()
 
             label_map = {
                 "Atk_PP_Success": "Post Plant",
@@ -418,25 +422,17 @@ with tabs[2]:
             sort_order = st.radio("Order", ["Descending", "Ascending"], horizontal=True)
             ascending = sort_order == "Ascending"
 
-            pp_df = summary[['Map', 'Atk_PP_Success', 'Def_PP_Success']].copy()
-            pp_df = pp_df.fillna(0)
-
-            pp_df['Atk_PP_Success'] = pd.to_numeric(pp_df['Atk_PP_Success'], errors='coerce')
-            pp_df['Def_PP_Success'] = pd.to_numeric(pp_df['Def_PP_Success'], errors='coerce')
+            # Optional: convert to 0–100 range if needed
             if pp_df['Atk_PP_Success'].max() <= 1.0:
                 pp_df['Atk_PP_Success'] *= 100
                 pp_df['Def_PP_Success'] *= 100
 
-            # Sort before renaming columns
             pp_df = pp_df.sort_values(by=sort_col, ascending=ascending)
             pp_df['Map'] = pd.Categorical(pp_df['Map'], categories=pp_df['Map'], ordered=True)
 
-            # Rename for nicer legend labels
             pp_df.rename(columns=label_map, inplace=True)
-
             pp_df_long = pp_df.melt(id_vars='Map', var_name='Side', value_name='Post-Plant Success (%)')
 
-            # Plot
             fig_pp = px.bar(
                 pp_df_long,
                 x='Map',
@@ -482,6 +478,8 @@ with tabs[2]:
             )
 
             st.plotly_chart(fig_pp, use_container_width=True)
+
+
 
 from datetime import datetime
 
