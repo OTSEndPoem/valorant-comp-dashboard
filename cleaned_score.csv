@@ -1,4 +1,4 @@
-Date,Date,Map,Start,First Pistol,First Rounds,First Half WR,Second Pistol,Second Rounds,Second Half WR,Atk PP %,Def PP %,Atk 2nd,Def 2nd,Outcome
+Date,Date,Map,Start,First Pistol,First Rounds,First Half WR,Second Pistol,Second Rounds,Second Half WR,Atk PP,Def PP,Atk 2nd,Def  2nd,Outcome
 2025-03-26,Team Secret,Ascent,Attack,0.0,3.0,0.25,1.0,7.0,0.58,75.00%,20.00%,LL,WW,Loss
 2025-03-26,RRQ Academy,Ascent,Attack,1.0,7.0,0.67,1.0,2.0,0.17,77.78%,0.00%,WW,WL,Loss
 2025-03-26,NS Redforce,Icebox,Defence,1.0,7.0,0.67,0.0,3.0,0.25,40.00%,40.00%,LL,WL,Loss
@@ -17,3 +17,8 @@ Date,Date,Map,Start,First Pistol,First Rounds,First Half WR,Second Pistol,Second
 2025-04-02,Sharper Esports,Icebox,Attack,1.0,7.0,0.58,1.0,8.0,0.67,100.00%,33.33%,WW,WW,Win
 2025-04-02,RRQ,Icebox,Defence,0.0,5.0,0.43,1.0,8.0,0.67,66.67%,22.22%,WW,LL,Win
 2025-04-02,DFM,Fracture,Attack,1.0,7.0,0.58,1.0,9.0,0.75,70.00%,40.00%,WW,WW,Win
+2025-04-03,Gen.G,Lotus,Attack,1.0,4.0,0.33,1.0,3.0,0.25,57.14%,20.00%,WW,WW,Loss
+2025-04-03,EDward Gaming,Icebox,Attack,1.0,10.0,0.83,0.0,7.0,0.58,83.33%,37.50%,WW,LL,Win
+2025-04-03,Paper Rex,Ascent,Attack,1.0,8.0,0.67,0.0,4.0,0.33,100.00%,0.00%,WW,LL,Draw
+2025-04-03,DRX,Lotus,Attack,1.0,8.0,0.67,1.0,7.0,0.58,77.78%,37.50%,WW,WL,Win
+2025-04-03,Gen.G,Haven,Attack,1.0,3.0,0.25,1.0,6.0,0.5,60.00%,28.57%,WW,WL,Loss
