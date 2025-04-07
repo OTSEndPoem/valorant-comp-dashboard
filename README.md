@@ -89,7 +89,7 @@ Make sure `cleaned_score.csv`, `form.csv`, and the agent icons are present.
 
 ## 📸 Screenshots
 
-![Dashboard Screenshot](screenshot.png)
+![Dashboard Screenshot](assets/screenshot.png)
 
 ---
 
