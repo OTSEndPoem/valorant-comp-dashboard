@@ -1,24 +1,27 @@
 Date,Date,Map,Start,First Pistol,First Rounds,First Half WR,Second Pistol,Second Rounds,Second Half WR,Atk_PP_Success,Def_PP_Success,Atk 2nd,Def 2nd,Outcome
-26/03/25,Team Secret,Ascent,Attack,0,3,0.25,1,7,0.58,75.00%,20.00%,LL,WW,Loss
-26/03/25,RRQ Academy,Ascent,Attack,1,7,0.67,1,2,0.17,77.78%,0.00%,WW,WL,Loss
-26/03/25,NS Redforce,Icebox,Defence,1,7,0.67,0,3,0.25,40.00%,40.00%,LL,WL,Loss
-26/03/25,Mongolz,Ascent,Defence,0,7,0.67,0,5,0.43,83.33%,28.57%,LL,LL,Draw
-27/03/25,Mongolz,Fracture,Attack,1,7,0.58,1,9,0.75,87.50%,50%,WW,WW,Win
-27/03/25,DFM,Ascent,Attack,0,4,0.33,0,3,0.25,66.67%,11%,LL,LL,Loss
-27/03/25,RRQ,Ascent,Defence,0,0,0,1,6,0.5,66.67%,0.00%,WW,LL,Loss
-27/03/25,Paper Rex,Fracture,Attack,1,7,0.58,0,4,0.33,70.00%,22.22%,WW,LL,Loss
-27/03/25,Sherpa,Split,Attack,1,7,0.58,0,5,0.43,87.50%,0.00%,WW,LL,Win
-01/04/25,Mongolz,Icebox,Defence,1,11,0.92,1,8,0.67,80.00%,80%,WW,WW,Win
-01/04/25,Kronicle Esports,Ascent,Defence,0,7,0.58,1,8,0.67,100.00%,33.33%,WW,LL,Win
-01/04/25,T1,Icebox,Defence,1,7,0.58,0,5,0.43,50.00%,44.44%,LL,WW,Draw
-01/04/25,T1,Lotus,Defence,1,5,0.42,1,8,0.67,88.89%,13%,WW,WL,Win
-02/04/25,BOOM,Icebox,Attack,1,6,0.5,0,6,0.5,85.71%,25.00%,WW,LL,Draw
-02/04/25,Kronicle Esports,Ascent,Attack,1,5,0.43,1,11,0.92,55.56%,50.00%,WW,WW,Win
-02/04/25,Sharper Esports,Icebox,Attack,1,7,0.58,1,8,0.67,100.00%,33.33%,WW,WW,Win
-02/04/25,RRQ,Icebox,Defence,0,5,0.43,1,8,0.67,66.67%,22.22%,WW,LL,Win
-02/04/25,DFM,Fracture,Attack,1,7,0.58,1,9,0.75,70.00%,40.00%,WW,WW,Win
-03/04/25,Gen.G,Lotus,Attack,1,4,0.33,1,3,0.25,57.14%,20.00%,WW,WW,Loss
-03/04/25,EDward Gaming,Icebox,Attack,1,10,0.83,0,7,0.58,83.33%,37.50%,WW,LL,Win
-03/04/25,Paper Rex,Ascent,Attack,1,8,0.67,0,4,0.33,100.00%,1.00%,WW,LL,Draw
-03/04/25,DRX,Lotus,Attack,1,8,0.67,1,7,0.58,77.78%,37.50%,WW,WL,Win
-03/04/25,Gen.G,Haven,Attack,1,3,0.25,1,6,0.5,60.00%,28.57%,WW,WL,Loss
+26/03/2025,Team Secret,Ascent,Attack,0,3,0.25,1,7,0.58,75.00%,20.00%,LL,WW,Loss
+26/03/2025,RRQ Academy,Ascent,Attack,1,7,0.67,1,2,0.17,77.78%,0.00%,WW,WL,Loss
+26/03/2025,NS Redforce,Icebox,Defence,1,7,0.67,0,3,0.25,40.00%,40.00%,LL,WL,Loss
+26/03/2025,Mongolz,Ascent,Defence,0,7,0.67,0,5,0.43,83.33%,28.57%,LL,LL,Draw
+27/03/2025,Mongolz,Fracture,Attack,1,7,0.58,1,9,0.75,87.50%,50%,WW,WW,Win
+27/03/2025,DFM,Ascent,Attack,0,4,0.33,0,3,0.25,66.67%,11%,LL,LL,Loss
+27/03/2025,RRQ,Ascent,Defence,0,0,0,1,6,0.5,66.67%,0.00%,WW,LL,Loss
+27/03/2025,Paper Rex,Fracture,Attack,1,7,0.58,0,4,0.33,70.00%,22.22%,WW,LL,Loss
+27/03/2025,Sherpa,Split,Attack,1,7,0.58,0,5,0.43,87.50%,0.00%,WW,LL,Win
+01/04/2025,Mongolz,Icebox,Defence,1,11,0.92,1,8,0.67,80.00%,80%,WW,WW,Win
+01/04/2025,Kronicle Esports,Ascent,Defence,0,7,0.58,1,8,0.67,100.00%,33.33%,WW,LL,Win
+01/04/2025,T1,Icebox,Defence,1,7,0.58,0,5,0.43,50.00%,44.44%,LL,WW,Draw
+01/04/2025,T1,Lotus,Defence,1,5,0.42,1,8,0.67,88.89%,13%,WW,WL,Win
+02/04/2025,BOOM,Icebox,Attack,1,6,0.5,0,6,0.5,85.71%,25.00%,WW,LL,Draw
+02/04/2025,Kronicle Esports,Ascent,Attack,1,5,0.43,1,11,0.92,55.56%,50.00%,WW,WW,Win
+02/04/2025,Sharper Esports,Icebox,Attack,1,7,0.58,1,8,0.67,100.00%,33.33%,WW,WW,Win
+02/04/2025,RRQ,Icebox,Defence,0,5,0.43,1,8,0.67,66.67%,22.22%,WW,LL,Win
+02/04/2025,DFM,Fracture,Attack,1,7,0.58,1,9,0.75,70.00%,40.00%,WW,WW,Win
+03/04/2025,Gen.G,Lotus,Attack,1,4,0.33,1,3,0.25,57.14%,20.00%,WW,WW,Loss
+03/04/2025,EDward Gaming,Icebox,Attack,1,10,0.83,0,7,0.58,83.33%,37.50%,WW,LL,Win
+03/04/2025,Paper Rex,Ascent,Attack,1,8,0.67,0,4,0.33,100.00%,1.00%,WW,LL,Draw
+03/04/2025,DRX,Lotus,Attack,1,8,0.67,1,7,0.58,77.78%,37.50%,WW,WL,Win
+03/04/2025,Gen.G,Haven,Attack,1,3,0.25,1,6,0.5,60.00%,28.57%,WW,WL,Loss
+07/04/2025,XIPTO,Icebox,Defence,1,6,0.5,1,6,0.5,66.67%,14.29%,WW,WW,Draw
+07/04/2025,Gen.G,Pearl,Defence,1,9,0.75,0,5,0.43,83.33%,57.14%,LW,WW,Win
+07/04/2025,GE Academy,Pearl,Attack,1,12,1,1,7,0.58,100.00%,16.67%,WW,WW,Win
