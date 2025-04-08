@@ -63,7 +63,7 @@ except Exception as e:
     score_df = pd.DataFrame()
     st.warning(f"⚠️ Couldn't load cleaned_score.csv: {e}")
 
-tabs = st.tabs(["📊 Overview", "🧩 Map Composition Win Rates", "📈 Round Insights","🔫 Pistol Insights","🔢 Player Stats"])
+tabs = st.tabs(["📊 Overview", "🧩 Map Composition Win Rates", "📈 Round Insights","🔫 Pistol Insights","🔢 Player Stats","🆚 Player Comparison"])
 
 # 📊 OVERVIEW TAB
 with tabs[0]:
@@ -853,6 +853,177 @@ if 'Atk_PP_Success' in summary.columns and 'Def_PP_Success' in summary.columns:
     )
 
     st.plotly_chart(fig_pp, use_container_width=True)
+
+# 📊 PLAYER COMPARISON TAB
+with tabs[5]:
+    st.subheader("🎚 Player vs VCT Benchmark Comparison")
+
+    try:
+        player_df = pd.read_csv("form.csv")
+    except Exception as e:
+        st.warning(f"Could not load player data: {e}")
+        player_df = pd.DataFrame()
+
+    if not player_df.empty:
+        # Convert and filter dates
+        player_df['Date'] = pd.to_datetime(player_df['Date'], errors='coerce')
+        player_df = player_df.dropna(subset=['Date'])
+
+        all_players = sorted(player_df['Player'].dropna().unique())
+        all_maps = sorted(player_df['Column 1'].dropna().unique())
+
+        min_date = player_df['Date'].min().date()
+        max_date = player_df['Date'].max().date()
+
+        col1, col2 = st.columns(2)
+        selected_player = col1.selectbox("Select a player:", all_players, key='compare_player')
+        start_date = col1.date_input("Start date:", value=min_date, min_value=min_date, max_value=max_date, key='compare_start')
+        end_date = col2.date_input("End date:", value=max_date, min_value=min_date, max_value=max_date, key='compare_end')
+        selected_map = col2.selectbox("Filter by Map:", ["All"] + all_maps, key='compare_map')
+
+        # Agent to role mapping
+        agent_roles = {
+            'Jett': 'Duelist', 'Raze': 'Duelist', 'Reyna': 'Duelist', 'Yoru': 'Duelist', 'Phoenix': 'Duelist', 'Iso': 'Duelist', 'Waylay': 'Duelist', 'Neon':'Duelist',
+            'Skye': 'Initiator', 'KAY/O': 'Initiator', 'Breach': 'Initiator', 'Fade': 'Initiator', 'Sova': 'Initiator', 'Gekko': 'Initiator', 'Tejo': 'Initiator',
+            'Omen': 'Controller', 'Brimstone': 'Controller', 'Astra': 'Controller', 'Viper': 'Controller', 'Harbor': 'Controller', 'Clove': 'Controller',
+            'Killjoy': 'Sentinel', 'Cypher': 'Sentinel', 'Chamber': 'Sentinel', 'Sage': 'Sentinel', 'Deadlock': 'Sentinel', 'Vyse': 'Sentinel'
+        }
+
+        # VCT average benchmarks by role
+        vct_benchmarks = {
+            'Duelist':     {'ACS': 240, 'KPR': 0.90, 'FBSR': 0.55, 'FKPR': 0.18, 'Atk_Entry': 0.55},
+            'Initiator':   {'ACS': 196, 'KPR': 0.90, 'FD': 2, 'K+A per Round': 1, 'Assists': 10.0},
+            'Controller':  {'ACS': 203, 'KPR': 0.90, 'FD': 2, 'K+A per Round': 1, 'Multi_Kills': 0.25},
+            'Sentinel':    {'ACS': 200, 'KPR': 0.90, 'FD': 2, 'Multi_Kills': 0.25, 'Anchor_Time': 48.0},
+        }
+
+        filtered = player_df[
+            (player_df['Player'] == selected_player) &
+            (player_df['Date'].dt.date >= start_date) &
+            (player_df['Date'].dt.date <= end_date)
+        ]
+
+        if selected_map != "All":
+            filtered = filtered[filtered['Column 1'] == selected_map]
+
+        if not filtered.empty:
+            # Fill missing 'Atk Entry' with 0 to ensure smooth calculations
+            if 'Atk_Entry' in filtered.columns:
+                filtered['Atk_Entry'] = filtered['Atk_Entry'].fillna(0)
+
+            # Clean and convert percentage columns
+            for col in ['Rounds', 'Kills', 'Deaths', 'Assists', 'ACS', 'FK', 'FBSR', 'FKPR', 'KPR', 'Atk_Entry', 'FD','Multi-Kills']:
+                if col in filtered.columns:
+                    filtered[col] = filtered[col].astype(str).str.replace('%', '', regex=False)
+                    filtered[col] = pd.to_numeric(filtered[col], errors='coerce')
+
+            # Compute player stats per agent
+            agent_stats = filtered.groupby('Agent').agg(
+                Rounds=('Rounds', 'sum'),
+                Kills=('Kills', 'sum'),
+                Deaths=('Deaths', 'sum'),
+                Multi_Kills=('Multi_Kills','mean'),
+                Assists=('Assists', 'mean'),
+                ACS=('ACS', 'mean'),
+                FK=('FK', 'sum'),
+                FBSR=('FBSR', 'mean'),
+                FKPR=('FKPR', 'mean'),
+                KPR=('KPR', 'mean'),
+                Atk_Entry=('Atk_Entry', 'mean'),
+                FD=('FD', 'mean'),
+                Anchor_Time=('Anchor_Time', 'mean')
+            ).reset_index()
+
+            agent_stats['K/D Ratio'] = agent_stats['Kills'] / agent_stats['Deaths'].replace(0, float('nan'))
+            agent_stats['K+A per Round'] = (agent_stats['Kills'] + agent_stats['Assists']) / agent_stats['Rounds'].replace(0, float('nan'))
+            agent_stats['Role'] = agent_stats['Agent'].map(agent_roles)
+
+            selected_role = st.selectbox("Select Role:", sorted(vct_benchmarks.keys()), key='compare_role')
+            role_agents = agent_stats[agent_stats['Role'] == selected_role]
+
+            if not role_agents.empty:
+                benchmark = vct_benchmarks[selected_role]
+
+                player_avg = {}
+                for stat in benchmark:
+                    if stat == 'FK':
+                        player_avg[stat] = (role_agents['FK'].sum() / role_agents['Rounds'].sum()) if role_agents['Rounds'].sum() > 0 else 0
+                    elif stat == 'K+A per Round':
+                        player_avg[stat] = (role_agents['Kills'].sum() + role_agents['Assists'].sum()) / role_agents['Rounds'].sum()
+                    elif stat == 'K/D Ratio':
+                        player_avg[stat] = role_agents['Kills'].sum() / role_agents['Deaths'].replace(0, float('nan')).sum()
+                    else:
+                        if stat in role_agents.columns:
+                            val = role_agents[stat].mean()
+                            player_avg[stat] = val if pd.notna(val) else 0
+                        else:
+                            player_avg[stat] = 0
+
+                # Normalize values (manual bounds)
+                norm_base = {
+                    'ACS': 300,
+                    'K/D Ratio': 2.0,
+                    'FK': 0.3,
+                    'K+A per Round': 1.2,
+                    'KPR': 1.2,
+                    'FBSR': 1.0,
+                    'FKPR': 0.3,
+                    'Atk_Entry': 1.0,
+                    'FD': 20.0,
+                    'Assists': 20.0,
+                    'Multi_Kills': 0.3,
+                    'Anchor_Time':80.0
+                }
+
+                categories = list(benchmark.keys())
+                player_values = [player_avg.get(stat, 0) / norm_base[stat] for stat in categories]
+                benchmark_values = [benchmark.get(stat, 0) / norm_base[stat] for stat in categories]
+
+                import plotly.graph_objects as go
+                fig = go.Figure()
+                fig.add_trace(go.Scatterpolar(
+                    r=player_values,
+                    theta=categories,
+                    fill='toself',
+                    name=f"{selected_player}",
+                    line=dict(color="#FDB913")
+                ))
+                fig.add_trace(go.Scatterpolar(
+                    r=benchmark_values,
+                    theta=categories,
+                    fill='toself',
+                    name=f"VCT {selected_role} Avg",
+                    line=dict(color="#444444")
+                ))
+                fig.update_layout(
+                    polar=dict(
+                        bgcolor="#000000",
+                        radialaxis=dict(
+                            visible=False,
+                            showticklabels=False,
+                            ticks='',
+                            showline=False,
+                            gridcolor="#333333"
+                        ),
+                        angularaxis=dict(tickfont=dict(color="#FDB913"))
+                    ),
+                    showlegend=True,
+                    legend=dict(font=dict(color="#ffffff")),
+                    plot_bgcolor='#000000',
+                    paper_bgcolor='#000000',
+                    font=dict(family='Inter', color='#FDB913'),
+                    title=dict(text=f"{selected_role} Stats vs VCT Benchmark", font=dict(size=16, color='#FDB913')),
+                    margin=dict(l=40, r=40, t=60, b=40)
+                )
+                st.plotly_chart(fig, use_container_width=True)
+
+            else:
+                st.info("No agents played in the selected role during this period.")
+
+        else:
+            st.info("No data found for this player in selected filters.")
+    else:
+        st.warning("No player stats found in form.csv")
 
 # Footer in bottom-right corner
 # Full-width footer pinned to bottom
