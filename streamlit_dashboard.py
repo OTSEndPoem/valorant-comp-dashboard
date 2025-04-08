@@ -709,6 +709,150 @@ with tabs[4]:
     else:
         st.warning("No player stats found in form.csv")
 
+     # 🐝 PLAYER ACS BEESWARM PLOT
+    with st.expander("🐝 Player ACS Beeswarm Plot"):
+        import seaborn as sns
+        import matplotlib.pyplot as plt
+
+        st.subheader("🐝 Player ACS Beeswarm Plot")
+
+        # Clean + convert
+        df = pd.read_csv("foracs.csv")
+        df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+        df['ACS'] = pd.to_numeric(df['ACS'], errors='coerce')
+
+        players = sorted(df['Player'].dropna().unique())
+        agents = sorted(df['Agent'].dropna().unique())
+        maps = sorted(df['Map'].dropna().unique())
+        dates = sorted(df['Date'].dropna().dt.date.unique())
+
+
+        # Filters
+        col1, col2 = st.columns(2)
+        selected_player = col1.selectbox("Select Player", players)
+        selected_agents = col2.multiselect("Filter by Agent(s)", agents, default=agents)
+        selected_maps = st.multiselect("Filter by Map(s)", maps, default=maps)
+
+        start_date = st.date_input("Start Date", value=min(dates), min_value=min(dates), max_value=max(dates))
+        end_date = st.date_input("End Date", value=max(dates), min_value=min(dates), max_value=max(dates))
+
+
+        # Filter the data
+        filtered_df = df[
+            (df['Player'] == selected_player) &
+            (df['Agent'].isin(selected_agents)) &
+            (df['Map'].isin(selected_maps)) &
+            (df['Date'].dt.date >= start_date) &
+            (df['Date'].dt.date <= end_date)
+        ]
+
+        if not filtered_df.empty:
+            avg_acs = filtered_df['ACS'].mean()
+
+            fig, ax = plt.subplots(figsize=(10, 5))
+            fig.patch.set_facecolor('#000000')
+            ax.set_facecolor('000000')
+            ax.spines['top'].set_visible(False)
+            ax.spines['right'].set_visible(False)
+            ax.spines['left'].set_color('#ffffff')
+            ax.spines['bottom'].set_color('#ffffff')
+
+            palette = sns.color_palette("husl", len(filtered_df['Agent'].unique()))
+            sns.swarmplot(data=filtered_df, x='Map', y='ACS', hue='Agent', palette=palette, ax=ax)
+            ax.axhline(avg_acs, color='yellow', linestyle='--', linewidth=1.5)
+            ax.text(x=0.5, y=avg_acs + 2, s=f"Avg ACS: {avg_acs:.1f}", color='yellow', fontsize=10, ha='left')
+
+            ax.set_title(f"{selected_player}'s ACS by Agent & Map", color='#FDB913', fontsize=14)
+            ax.set_ylabel("ACS", color='white')
+            ax.set_xlabel("Map", color='white')
+            ax.tick_params(colors='white')
+            ax.legend(title="Agent", loc='best', facecolor='#1a1a1a', labelcolor='white', title_fontsize=10, fontsize=9)
+
+            st.pyplot(fig)
+        else:
+            st.info("No ACS data for selected filters.")
+
+
+# --- Post-Plant Success Rate Bar Chart ---
+
+if 'Atk_PP_Success' in summary.columns and 'Def_PP_Success' in summary.columns:
+
+    st.markdown("### 📊 Post-Plant Success Rate by Map")
+
+    label_map = {
+        "Atk_PP_Success": "Post Plant",
+        "Def_PP_Success": "Retakes"
+    }
+
+    sort_label = st.selectbox("Sort by", list(label_map.values()), index=0)
+    sort_col = [k for k, v in label_map.items() if v == sort_label][0]
+    sort_order = st.radio("Order", ["Descending", "Ascending"], horizontal=True)
+    ascending = sort_order == "Ascending"
+
+    pp_df = summary[['Map', 'Atk_PP_Success', 'Def_PP_Success']].copy()
+    pp_df = pp_df.fillna(0)
+
+    pp_df['Atk_PP_Success'] = pd.to_numeric(pp_df['Atk_PP_Success'], errors='coerce')
+    pp_df['Def_PP_Success'] = pd.to_numeric(pp_df['Def_PP_Success'], errors='coerce')
+    if pp_df['Atk_PP_Success'].max() <= 1.0:
+        pp_df['Atk_PP_Success'] *= 100
+        pp_df['Def_PP_Success'] *= 100
+
+    # Sort before renaming columns
+    pp_df = pp_df.sort_values(by=sort_col, ascending=ascending)
+    pp_df['Map'] = pd.Categorical(pp_df['Map'], categories=pp_df['Map'], ordered=True)
+
+    # Rename for nicer legend labels
+    pp_df.rename(columns=label_map, inplace=True)
+
+    pp_df_long = pp_df.melt(id_vars='Map', var_name='Side', value_name='Post-Plant Success (%)')
+
+    # Plot
+    fig_pp = px.bar(
+        pp_df_long,
+        x='Map',
+        y='Post-Plant Success (%)',
+        color='Side',
+        barmode='stack',
+        text=pp_df_long['Post-Plant Success (%)'].apply(lambda x: f"{x:.1f}%"),
+        title="Post-Plant Success Rate (Stacked Atk + Def)",
+        color_discrete_map={
+            'Post Plant': '#FDB913',
+            'Retakes': '#ffffff'
+        }
+    )
+
+    fig_pp.update_traces(
+        textposition='inside',
+        marker_line_color='#333333',
+        marker_line_width=1.2
+    )
+
+    fig_pp.update_layout(
+        plot_bgcolor='#000000',
+        paper_bgcolor='#000000',
+        font=dict(family='Inter, sans-serif', size=14, color='#FDB913'),
+        title_font=dict(size=20, color='#FDB913'),
+        xaxis=dict(
+            title='Map',
+            title_font=dict(size=16, color='#FDB913'),
+            tickfont=dict(size=14, color='#ffffff'),
+            tickangle=-25,
+            gridcolor='#333333'
+        ),
+        yaxis=dict(
+            title='Post-Plant Success (%)',
+            title_font=dict(size=16, color='#FDB913'),
+            tickfont=dict(size=14, color='#ffffff'),
+            gridcolor='#333333',
+            range=[0, 100]
+        ),
+        legend=dict(
+            font=dict(size=13, color='#ffffff')
+        )
+    )
+
+    st.plotly_chart(fig_pp, use_container_width=True)
 
 # Footer in bottom-right corner
 # Full-width footer pinned to bottom
