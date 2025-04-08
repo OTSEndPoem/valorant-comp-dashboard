@@ -995,6 +995,29 @@ with tabs[5]:
                     name=f"VCT {selected_role} Avg",
                     line=dict(color="#444444")
                 ))
+
+                # Raw values as annotations (color-coded)
+                raw_values = []
+                for stat in categories:
+                    val = player_avg[stat]
+                    bmark = benchmark[stat]
+                    color = "#14532d" if val >= bmark else "#7f1d1d"
+                    raw_values.append(f"<span style='color:{color}'><b>{stat}</b>: {val:.2f}</span>")
+
+                fig.add_annotation(
+                    text="<br>".join(raw_values),
+                    showarrow=False,
+                    align="left",
+                    x=0.95,
+                    y=0.95,
+                    xref="paper",
+                    yref="paper",
+                    bordercolor="#666",
+                    borderwidth=1,
+                    bgcolor="rgba(0,0,0,0.85)",
+                    font=dict(color="white", size=12)
+                )
+
                 fig.update_layout(
                     polar=dict(
                         bgcolor="#000000",
