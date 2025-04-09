@@ -996,13 +996,24 @@ with tabs[5]:
                     line=dict(color="#444444")
                 ))
 
-                # Raw values as annotations (color-coded)
                 raw_values = []
                 for stat in categories:
                     val = player_avg[stat]
                     bmark = benchmark[stat]
-                    color = "#14532d" if val >= bmark else "#7f1d1d"
-                    raw_values.append(f"<span style='color:{color}'><b>{stat}</b>: {val:.2f}</span>")
+                    diff = val - bmark
+                    sign = '+' if diff >= 0 else ''
+                    color = "#14532d" if diff >= 0 else "#7f1d1d"
+
+                    # Use % format for relevant stats
+                    if stat in ['FBSR', 'FKPR', 'Atk Entry']:
+                        display_diff = f"{sign}{diff * 100:.1f}%"
+                    else:
+                        display_diff = f"{sign}{diff:.2f}"
+
+                    if stat in ['FBSR', 'FKPR', 'Atk Entry']:
+                        raw_values.append(f"<span style='color:{color}'><b>{stat}</b>: {sign}{diff * 100:.1f}%</span>")
+                    else:
+                        raw_values.append(f"<span style='color:{color}'><b>{stat}</b>: {sign}{diff:.2f}</span>")
 
                 fig.add_annotation(
                     text="<br>".join(raw_values),
