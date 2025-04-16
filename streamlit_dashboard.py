@@ -6,6 +6,27 @@ import plotly.express as px
 from data_cleaner import clean_scrim_form
 import base64
 
+# Hardcoded credentials
+USERNAME = "admin"
+PASSWORD = "wolves123"
+
+# Login logic
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+if not st.session_state.logged_in:
+    st.title("🔒 Scrim Dashboard Login")
+    username_input = st.text_input("Username")
+    password_input = st.text_input("Password", type="password")
+
+    if st.button("Login"):
+        if username_input == USERNAME and password_input == PASSWORD:
+            st.session_state.logged_in = True
+            st.experimental_rerun()
+        else:
+            st.error("Incorrect username or password")
+    st.stop()
+
 def get_base64_image(path):
     with open(path, "rb") as f:
         data = f.read()
