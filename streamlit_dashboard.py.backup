@@ -228,122 +228,51 @@ with tabs[1]:
         grouped['First Agent'] = grouped['Composition'].apply(lambda x: x[0])
         grouped['Icon Path'] = grouped['First Agent'].apply(lambda agent: f"assets/{agent}.png" if os.path.exists(f"assets/{agent}.png") else None)
 
-# Agent Icons Display with Bar Chart (rib.gg style)
-        if not grouped.empty:
-            # Custom CSS for rib.gg style layout
-            st.markdown("""
-            <style>
-            .composition-container {
-                margin: 4px 0;
-            }
-            .composition-bar {
-                display: flex;
-                align-items: center;
-                background: #2a2a2a;
-                border: 1px solid #333;
-                border-radius: 4px;
-                padding: 8px;
-                margin: 3px 0;
-                min-height: 45px;
-                position: relative;
-                overflow: hidden;
-            }
-            .bar-background {
-                position: absolute;
-                left: 180px;
-                top: 0;
-                height: 100%;
-                background: #FDB913;
-                border-radius: 0 4px 4px 0;
-                z-index: 1;
-            }
-            .agents-container {
-                display: flex;
-                gap: 4px;
-                align-items: center;
-                min-width: 170px;
-                z-index: 2;
-                position: relative;
-            }
-            .agent-icon-img {
-                width: 28px;
-                height: 28px;
-                border-radius: 3px;
-                border: 1px solid rgba(255,255,255,0.2);
-            }
-            .win-rate-info {
-                margin-left: auto;
-                z-index: 2;
-                position: relative;
-                color: white;
-                font-weight: bold;
-                text-align: right;
-                padding-right: 12px;
-            }
-            .win-percentage {
-                font-size: 16px;
-                text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-            }
-            .game-count {
-                font-size: 11px;
-                color: #ccc;
-            }
-            </style>
-            """, unsafe_allow_html=True)
-            
-            st.markdown(f"### Top Compositions on {selected_map}")
-            
-            # Calculate max width for bar scaling
-            max_win_rate = grouped['Win Rate %'].max()
-            
-            for idx, row in grouped.iterrows():
-                composition = row['Composition']
-                win_rate = row['Win Rate %']
-                games = row['games']
-                wins = row['wins']
-                losses = row['losses']
-                draws = row['draws']
-                
-                # Calculate bar width percentage (scale to fit remaining space)
-                bar_width_percent = (win_rate / max_win_rate * 60) if max_win_rate > 0 else 0
-                
-                # Create agent icons HTML
-                icons_html = ""
-                for agent in composition:
-                    icon_name = agent.lower().replace('/', '_').replace(' ', '_')
-                    icon_path = f"assets/agents/{icon_name}.png"
-                    
-                    if os.path.exists(icon_path):
-                        # Convert to base64 for HTML embedding
-                        import base64
-                        try:
-                            with open(icon_path, "rb") as img_file:
-                                img_data = base64.b64encode(img_file.read()).decode()
-                            icons_html += f'<img src="data:image/png;base64,{img_data}" class="agent-icon-img" title="{agent}" />'
-                        except:
-                            icons_html += f'<div class="agent-icon-img" style="background:#666;color:white;display:flex;align-items:center;justify-content:center;font-size:10px;" title="{agent}">{agent[:2]}</div>'
-                    else:
-                        icons_html += f'<div class="agent-icon-img" style="background:#666;color:white;display:flex;align-items:center;justify-content:center;font-size:10px;" title="{agent}">{agent[:2]}</div>'
-                
-                # Create the complete composition bar (rib.gg style)
-                composition_html = f"""
-                <div class="composition-container">
-                    <div class="composition-bar">
-                        <div class="bar-background" style="width: {bar_width_percent}%;"></div>
-                        <div class="agents-container">
-                            {icons_html}
-                        </div>
-                        <div class="win-rate-info">
-                            <div class="win-percentage">{win_rate:.1f}%</div>
-                            <div class="game-count">({games} games)</div>
-                        </div>
-                    </div>
-                </div>
-                """
-                
-                st.markdown(composition_html, unsafe_allow_html=True)
-        else:
-            st.info(f"No composition data available for {selected_map}")
+        fig_comp = px.bar(
+            grouped,
+            x='Win Rate %',
+            y='Comp String',
+            text=grouped['Win Rate %'].apply(lambda x: f"{x:.2f}%"),
+            hover_data={'games': True, 'wins': True, 'losses': True, 'draws': True},
+            orientation='h',
+            title=f"Top Compositions on {selected_map}",
+            labels={'Win Rate %': 'Win Rate (%)', 'Comp String': 'Agent Composition'},
+            color_discrete_sequence=['#FDB913']
+        )
+
+        fig_comp.update_traces(
+            textposition='outside',
+            marker_line_color='#000000',
+            marker_line_width=0.5,
+            customdata=grouped[['games']].values,
+            hovertemplate='%{y}<br>Win Rate: %{x:.2f}%<br>Games Played: %{customdata[0]}'
+        )
+
+        fig_comp.update_layout(
+            plot_bgcolor='#000000',
+            paper_bgcolor='#000000',
+            font=dict(color='#FDB913', family='Inter'),
+            title_font=dict(size=20, color='#FDB913'),
+            margin=dict(t=40, l=100, r=40, b=20),
+            yaxis=dict(
+                categoryorder='total ascending',
+                tickfont=dict(color='#ffffff'),
+                showgrid=False,
+                showline=False,
+                zeroline=False
+            ),
+            xaxis=dict(
+                showgrid=False,
+                showline=False,
+                zeroline=False,
+                visible=False
+            ),
+            showlegend=False
+        )
+
+
+        st.plotly_chart(fig_comp, use_container_width=True)
+
 
 # 📈 ROUND INSIGHTS TAB
 with tabs[2]:
