@@ -305,7 +305,7 @@ with tabs[1]:
                 draws = row['draws']
                 
                 # Calculate bar width percentage (scale to fit remaining space)
-                bar_width_percent = (win_rate / max_win_rate * 60) if max_win_rate > 0 else 0
+                bar_width_percent = (win_rate / max_win_rate * 80) if max_win_rate > 0 else 0
                 
                 # Create agent icons HTML
                 icons_html = ""
