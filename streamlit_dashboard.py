@@ -6,25 +6,34 @@ import plotly.express as px
 from data_cleaner import clean_scrim_form
 import base64
 
+# Theme colors
+THEME_PINK = "#fd2659"
+
 # Hardcoded credentials
 USERNAME = "admin"
-PASSWORD = "wolves123"
+PASSWORD = "anyquestions"
 
 # Login logic
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
+# Allow automated tests to bypass login when AUTOTEST=1 is set in the environment
+if os.getenv("AUTOTEST") == "1":
+    # mark as logged in for headless automated checks
+    if "logged_in" not in st.session_state or not st.session_state.logged_in:
+        st.session_state.logged_in = True
+else:
+    if "logged_in" not in st.session_state:
+        st.session_state.logged_in = False
 
 if not st.session_state.logged_in:
-    st.title("🔒 Scrim Dashboard Login")
-    username_input = st.text_input("Username")
-    password_input = st.text_input("Password", type="password")
+    st.title("🔒 登录训练赛仪表盘")
+    username_input = st.text_input("用户名")
+    password_input = st.text_input("密码", type="password")
 
-    if st.button("Login"):
+    if st.button("登录"):
         if username_input == USERNAME and password_input == PASSWORD:
             st.session_state.logged_in = True
             st.rerun()
         else:
-            st.error("Incorrect username or password")
+            st.error("用户名或密码错误")
     st.stop()
 
 def get_base64_image(path):
@@ -32,8 +41,8 @@ def get_base64_image(path):
         data = f.read()
     return base64.b64encode(data).decode()
 
-st.set_page_config(page_title="Valorant Scrim Dashboard", layout="wide")
-encoded_bg = get_base64_image("wallp.png")
+st.set_page_config(page_title="AQ训练赛仪表盘", layout="wide")
+encoded_bg = get_base64_image("VCT_CN_Ascension_KV_Clean.png")
 st.markdown(f"""
     <style>
     body {{
@@ -54,19 +63,104 @@ st.markdown(f"""
         border-radius: 12px;
     }}
 
-    h1, h2, h3, .stTabs, .stButton {{
-        font-family: 'Inter', sans-serif;
-        color: #FDB913;
+    h2, h3, h4 {{
+        color: #49FFD3 !important;
+    }}
+    /* Tab label colors: unselected = #f2f2f2, selected = #fd2659 */
+    .stTabs [role="tab"] {{
+        color: #f2f2f2 !important;
+        background: transparent !important;
+        border: none !important;
+    }}
+    .stTabs [role="tab"][aria-selected="true"] {{
+        color: #fd2659 !important;
+        font-weight: 600 !important;
+    }}
+    /* Make the main dashboard title use the requested Valorant pink */
+    h1 {{
+        color: #fd2659 !important;
+    }}
+    .stButton, .stRadio {{
+        color: #fd2659 !important;
+    }}
+    .stDataFrame, .stTable {{
+        background-color: #f2f2f2;
+    }}
+    /* Make selectbox / dropdown text light so it matches theme */
+    /* Native select element */
+    select, select option {{
+        color: #f2f2f2 !important;
+        background: transparent !important;
+    }}
+    /* Streamlit creates div-based widgets too; target common classes */
+    .stSelectbox [role="listbox"], .stSelectbox [role="option"], .stSelectbox .css-1oe7bjp, .stSelectbox .css-1v0mbdj {{
+        color: #f2f2f2 !important;
+    }}
+        /* Radio buttons (e.g., "Descending" / "Ascending") */
+        /* Target Streamlit radio widgets and inner markdown text containers */
+        [data-testid="stRadio"] label,
+        [data-testid="stRadio"] [role="radio"],
+        .stRadio label,
+        .stRadio [role="radio"],
+        [role="radiogroup"] [data-testid="stMarkdownContainer"],
+        [role="radiogroup"] [data-testid="stMarkdownContainer"] p,
+        [data-baseweb="radio"] [data-testid="stMarkdownContainer"],
+        [data-baseweb="radio"] [data-testid="stMarkdownContainer"] p,
+        .stRadio [data-testid="stMarkdownContainer"],
+        .stRadio [data-testid="stMarkdownContainer"] p {{
+            color: #f2f2f2 !important;
+        }}
+        /* Native radio inputs + their adjacent labels */
+        input[type="radio"] + label,
+        input[type="radio"] ~ label {{
+            color: #f2f2f2 !important;
+        }}
+    /* Widget labels (selectbox/date_input/etc) */
+    /* Prefer stable data-testid attribute when available */
+    [data-testid="stWidgetLabel"], .stApp label, .stApp .css-1kyxreq, .stApp .css-ffhzg2, .stApp .stSelectbox > label, .stApp .stDateInput > label, .stApp .stTextInput > label {{
+        color: #f2f2f2 !important;
+    }}
+    /* Expander header colors: collapsed = #f2f2f2, expanded = #49ffd3 */
+    /* Use data-testid and aria attributes which are more stable than generated class names */
+    [data-testid="stExpander"] [role="button"], [data-testid="stExpander"] summary, .stExpander [role="button"], .stExpanderHeader {{
+        color: #f2f2f2 !important;
+    }}
+    /* When expanded */
+    [data-testid="stExpander"] [role="button"][aria-expanded="true"], [data-testid="stExpander"] summary[aria-expanded="true"], .stExpander [role="button"][aria-expanded="true"] {{
+        color: #49ffd3 !important;
+    }}
+    /* Generic fallback for any element using aria-expanded */
+    [aria-expanded="false"] {{
+        color: #f2f2f2 !important;
+    }}
+    [aria-expanded="true"] {{
+        color: #49ffd3 !important;
     }}
 
-    .stDataFrame, .stTable {{
-        background-color: #1a1a1a;
+    /* Tabs: prefer data-testid if present */
+    [data-testid="stTabs"] [role="tab"], .stTabs [role="tab"] {{
+        color: #f2f2f2 !important;
+        background: transparent !important;
+        border: none !important;
+    }}
+    [data-testid="stTabs"] [role="tab"][aria-selected="true"], .stTabs [role="tab"][aria-selected="true"] {{
+        color: #fd2659 !important;
+        font-weight: 600 !important;
+    }}
+
+    /* Selectbox / dropdown: target native select and Streamlit's listbox variants */
+    [data-testid="stSelectbox"] select, [data-testid="stSelectbox"] select option, select, select option {{
+        color: #f2f2f2 !important;
+        background: transparent !important;
+    }}
+    [data-testid="stSelectbox"] [role="listbox"], [data-testid="stSelectbox"] [role="option"], .stSelectbox [role="listbox"], .stSelectbox [role="option"] {{
+        color: #49ffd3 !important;
     }}
     </style>
 """, unsafe_allow_html=True)
 
-st.title("Valorant Scrim Dashboard")
-st.image("wolves_logo.png", width=100)
+st.title("AQ训练赛仪表盘")
+st.image("Any_Questions_darkmode.png", width=100)
 
 
 # Load form.csv for overview and map comps
@@ -75,28 +169,28 @@ try:
     form_df = form_df[['Column 1', 'Agent', 'Result']].dropna().reset_index(drop=True)
 except Exception as e:
     form_df = pd.DataFrame()
-    st.warning(f"⚠️ Couldn't load form.csv: {e}")
+    st.warning(f"⚠️ 无法加载 form.csv: {e}")
 
 # Load cleaned_score.csv for Round Insights
 try:
     score_df = pd.read_csv("cleaned_score.csv")
 except Exception as e:
     score_df = pd.DataFrame()
-    st.warning(f"⚠️ Couldn't load cleaned_score.csv: {e}")
+    st.warning(f"⚠️ 无法加载 cleaned_score.csv: {e}")
 
-tabs = st.tabs(["📊 Overview", "🧩 Map Composition Win Rates", "📈 Round Insights","🔫 Pistol Insights","🔢 Player Stats","🆚 Player Comparison"])
+tabs = st.tabs(["📊 总览", "🧩 阵容胜率", "📈 回合分析", "🔫 手枪局分析", "🔢 选手数据", "🆚 选手对比"])
 
 # 📊 OVERVIEW TAB
 with tabs[0]:
-    st.markdown("### 📅 Filter by Date Range")
+    st.markdown("### 📅 按时间范围筛选")
     overview_dates = sorted(score_df['Date'].dropna().unique())
     date_col1, date_col2 = st.columns(2)
-    start_date_overview = date_col1.selectbox("Start Date (Overview)", overview_dates, key="overview_start")
-    end_date_overview = date_col2.selectbox("End Date (Overview)", overview_dates, index=len(overview_dates)-1, key="overview_end")
+    start_date_overview = date_col1.selectbox("开始日期 (总览)", overview_dates, key="overview_start")
+    end_date_overview = date_col2.selectbox("结束日期 (总览)", overview_dates, index=len(overview_dates)-1, key="overview_end")
 
     filtered_score = score_df[(score_df['Date'] >= start_date_overview) & (score_df['Date'] <= end_date_overview)]
 
-    st.subheader("Map Overview: Total Games, Wins, Draws, Losses, Win Rate")
+    st.subheader("地图总览: 总局数, 胜场, 平局, 败场, 胜率")
     if not filtered_score.empty:
         summary = filtered_score.groupby('Map').agg(
             Games=('Outcome', 'count'),
@@ -107,7 +201,7 @@ with tabs[0]:
         summary['Win Rate'] = summary['Wins'] / summary['Games']
         st.dataframe(summary.sort_values(by='Map'), use_container_width=True)
         # 📊 Map Win Rate Horizontal Bar Chart
-        st.markdown("### 🗺️ Map Win Rates")
+        st.markdown("### 🗺️ 地图胜率")
 
         winrate_df = summary[['Map', 'Win Rate']].dropna().copy()
         winrate_df['Win Rate %'] = winrate_df['Win Rate'] * 100
@@ -119,31 +213,31 @@ with tabs[0]:
             y='Map',
             orientation='h',
             text=winrate_df['Win Rate %'].apply(lambda x: f"{x:.1f}%"),
-            title="Map Win Rates",
-            labels={'Win Rate %': 'Win Rate (%)', 'Map': 'Map'},
+            title="地图胜率",
+            labels={'Win Rate %': '胜率 (%)', 'Map': '地图'},
             color='Win Rate %',
-            color_continuous_scale=['#ff0000', '#FDB913']
+            color_continuous_scale=['#49ffd3', '#FD2659']
         )
 
         fig_map_wr.update_traces(
             textposition='outside',
-            marker_line_color='#000000',
+            marker_line_color='#f2f2f2',
             marker_line_width=1.2
         )
 
         fig_map_wr.update_layout(
             plot_bgcolor='#000000',
             paper_bgcolor='#000000',
-            font=dict(family='Inter', size=14, color='#FDB913'),
-            title_font=dict(size=20, color='#FDB913'),
+            font=dict(family='Inter', size=14, color='#FD2659'),
+            title_font=dict(size=20, color='#FD2659'),
             yaxis=dict(
                 tickfont=dict(color='#ffffff'),
                 categoryorder='total ascending',
                 gridcolor='#333333'
             ),
             xaxis=dict(
-                title='Win Rate (%)',
-                title_font=dict(color='#FDB913'),
+                title='胜率 (%)',
+                title_font=dict(color='#FD2659'),
                 tickfont=dict(color='#ffffff'),
                 gridcolor='#333333',
                 range=[0, 100]
@@ -153,13 +247,13 @@ with tabs[0]:
         st.plotly_chart(fig_map_wr, use_container_width=True)
 
     else:
-        st.info("No scrim data in this date range.")
+        st.info("所选时间段内未找到训练赛数据。")
 
 ### --- Composition Win Rate Chart (Styled like rib.gg) ---
 
 # This block should only be inside the Map Composition tab
 with tabs[1]:
-    st.subheader("Top 5-agent Composition Win Rates by Map")
+    st.subheader("Top 5 阵容胜率")
     if not form_df.empty:
         valid_maps = []
         for i in range(0, len(form_df) - 4, 5):
@@ -168,7 +262,7 @@ with tabs[1]:
                 valid_maps.append(block['Column 1'].iloc[0])
 
         valid_maps = sorted(set(valid_maps))
-        selected_map = st.selectbox("Select a map:", valid_maps)
+        selected_map = st.selectbox("选择地图:", valid_maps)
 
         teams = []
         filtered_dates = set(score_df['Date'])
@@ -253,7 +347,7 @@ with tabs[1]:
                 left: 180px;
                 top: 0;
                 height: 100%;
-                background: #FDB913;
+                background: #FD2659;
                 border-radius: 0 4px 4px 0;
                 z-index: 1;
             }
@@ -291,7 +385,7 @@ with tabs[1]:
             </style>
             """, unsafe_allow_html=True)
             
-            st.markdown(f"### Top Compositions on {selected_map}")
+            st.markdown(f"### {selected_map} 阵容胜率")
             
             # Calculate max width for bar scaling
             max_win_rate = grouped['Win Rate %'].max()
@@ -343,19 +437,19 @@ with tabs[1]:
                 
                 st.markdown(composition_html, unsafe_allow_html=True)
         else:
-            st.info(f"No composition data available for {selected_map}")
+            st.info(f"所选地图 {selected_map} 没有可用的阵容数据。")
 
 # 📈 ROUND INSIGHTS TAB
 with tabs[2]:
-    st.subheader("📈 Round Insights from cleaned_score.csv")
+    st.subheader("📈 回合数据分析 - 来自 cleaned_score.csv")
     if not score_df.empty:
         maps = sorted(score_df['Map'].dropna().unique())
         dates = sorted(score_df['Date'].dropna().unique())
 
         col1, col2 = st.columns(2)
-        selected_map = col1.selectbox("Filter by Map", ["All"] + maps)
-        start_date = col1.selectbox("Start Date", dates, key="insight_start")
-        end_date = col2.selectbox("End Date", dates, index=len(dates)-1, key="insight_end")
+        selected_map = col1.selectbox("按地图筛选", ["All"] + maps)
+        start_date = col1.selectbox("开始日期", dates, key="insight_start")
+        end_date = col2.selectbox("结束日期", dates, index=len(dates)-1, key="insight_end")
 
         filtered_df = score_df.copy()
         if selected_map != "All":
@@ -379,7 +473,7 @@ with tabs[2]:
 
         st.dataframe(filtered_df, use_container_width=True)
 
-        st.markdown("### 🔍 Summary Stats")
+        st.markdown("### 🔍 数据汇总")
 
         agg_dict = {
             'Games': ('Outcome', 'count'),
@@ -440,7 +534,7 @@ with tabs[2]:
             .set_properties(**{'text-align': 'center'})\
             .set_table_styles([{
                 'selector': 'th',
-                'props': [('background-color', '#1a1a1a'), ('color', '#FDB913'), ('text-align', 'center')]
+                'props': [('background-color', '#f2f2f2'), ('color', '#FD2659'), ('text-align', 'center')]
             }])
 
         # Only show selected columns in the summary table (hide raw WRs)
@@ -458,10 +552,10 @@ with tabs[2]:
         plot_df = plot_df.melt(id_vars='Map', var_name='Side', value_name='Win Rate (%)')
         plot_df['Map'] = pd.Categorical(plot_df['Map'], categories=plot_df.groupby('Map')['Win Rate (%)'].mean().sort_values(ascending=False).index, ordered=True)
 
-        # Wolves color map
+        # VCT CN color map
         color_map = {
-            'Attack': '#FDB913',   # Gold
-            'Defense': '#ffffff'   # White
+            'Attack': '#FD2659',   # Red
+            'Defense': '#49ffd3'   # Green
         }
 
         fig = px.bar(
@@ -472,7 +566,7 @@ with tabs[2]:
             color_discrete_map=color_map,
             barmode='group',
             text=plot_df['Win Rate (%)'].apply(lambda x: f"{x:.1f}%"),
-            title="Attack vs Defense Win Rates by Map"
+            title="攻防胜率对比"
         )
 
         fig.update_traces(
@@ -485,18 +579,18 @@ with tabs[2]:
         fig.update_layout(
             plot_bgcolor='#000000',
             paper_bgcolor='#000000',
-            font=dict(color='#FDB913', family='Inter'),
-            title_font=dict(color='#FDB913', size=20),
+            font=dict(color='#f2f2f2', family='Inter'),
+            title_font=dict(color='#49ffd3', size=20),
             legend_title_text='Side',
-            xaxis=dict(tickangle=-25, gridcolor='#333333'),
-            yaxis=dict(range=[0, 100], gridcolor='#333333')
+            xaxis=dict(tickangle=-25, gridcolor='#f2f2f2'),
+            yaxis=dict(range=[0, 100], gridcolor='#f2f2f2')
         )
 
         st.plotly_chart(fig, use_container_width=True)
 
         #--- Post-Plant Success Rate Bar Chart ---
         if 'Atk_PP_Success' in score_df.columns and 'Def_PP_Success' in score_df.columns:
-            st.markdown("### 📊 Post-Plant Success Rate by Map")
+            st.markdown("### 📊 下包后成功概率")
 
             # Fresh aggregation directly from original score_df
             pp_df = score_df.groupby('Map').agg({
@@ -509,9 +603,9 @@ with tabs[2]:
                 "Def_PP_Success": "Retakes"
             }
 
-            sort_label = st.selectbox("Sort by", list(label_map.values()), index=0)
+            sort_label = st.selectbox("按以下指标排序", list(label_map.values()), index=0)
             sort_col = [k for k, v in label_map.items() if v == sort_label][0]
-            sort_order = st.radio("Order", ["Descending", "Ascending"], horizontal=True)
+            sort_order = st.radio("排序方式", ["Descending", "Ascending"], horizontal=True)
             ascending = sort_order == "Ascending"
 
             # Optional: convert to 0–100 range if needed
@@ -534,8 +628,8 @@ with tabs[2]:
                 text=pp_df_long['Post-Plant Success (%)'].apply(lambda x: f"{x:.1f}%"),
                 title="Post-Plant Success Rate (Stacked Atk + Def)",
                 color_discrete_map={
-                    'Post Plant': '#FDB913',
-                    'Retakes': '#ffffff'
+                    'Post Plant': '#FD2659',
+                    'Retakes': '#49ffd3'
                 }
             )
 
@@ -548,24 +642,24 @@ with tabs[2]:
             fig_pp.update_layout(
                 plot_bgcolor='#000000',
                 paper_bgcolor='#000000',
-                font=dict(family='Inter, sans-serif', size=14, color='#FDB913'),
-                title_font=dict(size=20, color='#FDB913'),
+                font=dict(family='Inter, sans-serif', size=14, color='#FD2659'),
+                title_font=dict(size=20, color='#49ffd3'),
                 xaxis=dict(
                     title='Map',
-                    title_font=dict(size=16, color='#FDB913'),
-                    tickfont=dict(size=14, color='#ffffff'),
+                    title_font=dict(size=16, color='#49ffd3'),
+                    tickfont=dict(size=14, color='#f2f2f2'),
                     tickangle=-25,
                     gridcolor='#333333'
                 ),
                 yaxis=dict(
                     title='Post-Plant Success (%)',
-                    title_font=dict(size=16, color='#FDB913'),
-                    tickfont=dict(size=14, color='#ffffff'),
+                    title_font=dict(size=16, color='#49ffd3'),
+                    tickfont=dict(size=14, color='#f2f2f2'),
                     gridcolor='#333333',
                     range=[0, 100]
                 ),
                 legend=dict(
-                    font=dict(size=13, color='#ffffff')
+                    font=dict(size=13, color='#f2f2f2')
                 )
             )
 
@@ -579,7 +673,7 @@ from datetime import datetime
 
 # 📊 GRAPH INSIGHTS TAB
 with tabs[3]:
-    st.subheader("🔫 Pistol Round Win Rate by Map")
+    st.subheader("🔫 手枪局胜率")
 
     if not score_df.empty:
         # Ensure date column is in datetime format
@@ -618,7 +712,7 @@ with tabs[3]:
             y='Pistol Win Rate (%)',
             text=grouped['Pistol Win Rate (%)'].apply(lambda x: f"{x:.1f}%"),
             color='Pistol Win Rate (%)',
-            color_continuous_scale=['#ff0000', '#FDB913'],
+            color_continuous_scale=['#49ffd3', '#FD2659'],
             title="Pistol Win Rates by Map"
         )
 
@@ -631,17 +725,17 @@ with tabs[3]:
         fig_pistol.update_layout(
             plot_bgcolor='#000000',
             paper_bgcolor='#000000',
-            font=dict(family='Inter', size=14, color='#FDB913'),
-            title_font=dict(size=20, color='#FDB913'),
+            font=dict(family='Inter', size=14, color='#FD2659'),
+            title_font=dict(size=20, color='#FD2659'),
             xaxis=dict(tickfont=dict(color='#ffffff'), gridcolor='#333333'),
-            yaxis=dict(range=[0, 100], title='Win Rate (%)', title_font=dict(color='#FDB913'), tickfont=dict(color='#ffffff'), gridcolor='#333333')
+            yaxis=dict(range=[0, 100], title='Win Rate (%)', title_font=dict(color='#FD2659'), tickfont=dict(color='#ffffff'), gridcolor='#333333')
         )
 
         st.plotly_chart(fig_pistol, use_container_width=True)
 
         # --- 2nd Round Conversion Pie Charts (WW/WL and LL/LW) ---
         # --- 2nd Round Conversion Pie Charts (WW/WL and LL/LW) ---
-        st.markdown("### 🍰 2nd Round Outcomes by Map")
+        st.markdown("### 🍰 第二回合结果")
 
         if 'Atk 2nd' in filtered_df.columns and 'Def 2nd' in filtered_df.columns:
 
@@ -658,7 +752,7 @@ with tabs[3]:
              col1, col2 = st.columns(2)
 
              with col1:
-                 st.markdown("#### 🔁 After Winning Pistol (WW/WL)")
+                 st.markdown("#### 🔁 赢得手枪局后 (WW/WL)")
                  filtered_win = map_conversions[map_conversions['Conversion'].isin(['WW', 'WL'])]
 
                  if filtered_win.empty:
@@ -672,11 +766,11 @@ with tabs[3]:
                          pie_data_win,
                          names='Conversion',
                          values='Percentage',
-                         title=f"Pistol Conversion - {selected_map}",
+                         title=f"手枪局转化 - {selected_map}",
                          color='Conversion',
                          color_discrete_map={
-                             'WW': '#FDB913',
-                             'WL': '#666666'
+                             'WW': '#FD2659',
+                             'WL': '#d3d3d3'
                          },
                          hole=0.4
                      )
@@ -690,15 +784,15 @@ with tabs[3]:
                      fig_pie_win.update_layout(
                          plot_bgcolor='#000000',
                          paper_bgcolor='#000000',
-                         font=dict(family='Inter', size=14, color='#FDB913'),
-                         title_font=dict(size=18, color='#FDB913'),
+                         font=dict(family='Inter', size=14, color='#FD2659'),
+                         title_font=dict(size=18, color='#FD2659'),
                          legend=dict(font=dict(color='#ffffff'))
                      )
 
                      st.plotly_chart(fig_pie_win, use_container_width=True)
 
              with col2:
-                 st.markdown("#### 🔁 After Losing Pistol (LL/LW)")
+                 st.markdown("#### 🔁 输掉手枪局后 (LL/LW)")
                  filtered_loss = map_conversions[map_conversions['Conversion'].isin(['LL', 'LW'])]
 
                  if filtered_loss.empty:
@@ -712,11 +806,11 @@ with tabs[3]:
                          pie_data_loss,
                          names='Conversion',
                          values='Percentage',
-                         title=f"Eco Round Outcomes - {selected_map}",
+                         title=f"Eco分结果 - {selected_map}",
                          color='Conversion',
                          color_discrete_map={
-                             'LL': '#444444',
-                             'LW': '#3b82f6'
+                             'LL': '#d3d3d3',
+                             'LW': '#49ffd3'
                          },
                          hole=0.4
                      )
@@ -730,8 +824,8 @@ with tabs[3]:
                      fig_pie_loss.update_layout(
                          plot_bgcolor='#000000',
                          paper_bgcolor='#000000',
-                         font=dict(family='Inter', size=14, color='#FDB913'),
-                         title_font=dict(size=18, color='#FDB913'),
+                         font=dict(family='Inter', size=14, color='#FD2659'),
+                         title_font=dict(size=18, color='#FD2659'),
                          legend=dict(font=dict(color='#ffffff'))
                      )
 
@@ -763,9 +857,9 @@ with tabs[4]:
 
         col1, col2 = st.columns(2)
         selected_player = col1.selectbox("Select a player:", all_players)
-        start_date = col1.date_input("Start date:", min_value=min_date, max_value=max_date, value=min_date)
-        end_date = col2.date_input("End date:", min_value=min_date, max_value=max_date, value=max_date)
-        selected_map = col2.selectbox("Filter by Map:", ["All"] + all_maps)
+        start_date = col1.date_input("开始日期:", min_value=min_date, max_value=max_date, value=min_date)
+        end_date = col2.date_input("结束日期:", min_value=min_date, max_value=max_date, value=max_date)
+        selected_map = col2.selectbox("按地图筛选:", ["All"] + all_maps)
 
         filtered = player_df[
             (player_df['Player'] == selected_player) &
@@ -823,10 +917,10 @@ with tabs[4]:
         col1, col2 = st.columns(2)
         selected_player = col1.selectbox("Select Player", players)
         selected_agents = col2.multiselect("Filter by Agent(s)", agents, default=agents)
-        selected_maps = st.multiselect("Filter by Map(s)", maps, default=maps)
+        selected_maps = st.multiselect("按地图筛选(s)", maps, default=maps)
 
-        start_date = st.date_input("Start Date", value=min(dates), min_value=min(dates), max_value=max(dates))
-        end_date = st.date_input("End Date", value=max(dates), min_value=min(dates), max_value=max(dates))
+        start_date = st.date_input("开始日期", value=min(dates), min_value=min(dates), max_value=max(dates))
+        end_date = st.date_input("结束日期", value=max(dates), min_value=min(dates), max_value=max(dates))
 
 
         # Filter the data
@@ -854,11 +948,11 @@ with tabs[4]:
             ax.axhline(avg_acs, color='yellow', linestyle='--', linewidth=1.5)
             ax.text(x=0.5, y=avg_acs + 2, s=f"Avg ACS: {avg_acs:.1f}", color='yellow', fontsize=10, ha='left')
 
-            ax.set_title(f"{selected_player}'s ACS by Agent & Map", color='#FDB913', fontsize=14)
+            ax.set_title(f"{selected_player}'s ACS by Agent & Map", color='#FD2659', fontsize=14)
             ax.set_ylabel("ACS", color='white')
             ax.set_xlabel("Map", color='white')
             ax.tick_params(colors='white')
-            ax.legend(title="Agent", loc='best', facecolor='#1a1a1a', labelcolor='white', title_fontsize=10, fontsize=9)
+            ax.legend(title="Agent", loc='best', facecolor='#f2f2f2', labelcolor='white', title_fontsize=10, fontsize=9)
 
             st.pyplot(fig)
         else:
@@ -909,7 +1003,7 @@ if 'Atk_PP_Success' in summary.columns and 'Def_PP_Success' in summary.columns:
         text=pp_df_long['Post-Plant Success (%)'].apply(lambda x: f"{x:.1f}%"),
         title="Post-Plant Success Rate (Stacked Atk + Def)",
         color_discrete_map={
-            'Post Plant': '#FDB913',
+            'Post Plant': '#FD2659',
             'Retakes': '#ffffff'
         }
     )
@@ -923,18 +1017,18 @@ if 'Atk_PP_Success' in summary.columns and 'Def_PP_Success' in summary.columns:
     fig_pp.update_layout(
         plot_bgcolor='#000000',
         paper_bgcolor='#000000',
-        font=dict(family='Inter, sans-serif', size=14, color='#FDB913'),
-        title_font=dict(size=20, color='#FDB913'),
+        font=dict(family='Inter, sans-serif', size=14, color='#FD2659'),
+        title_font=dict(size=20, color='#FD2659'),
         xaxis=dict(
             title='Map',
-            title_font=dict(size=16, color='#FDB913'),
+            title_font=dict(size=16, color='#FD2659'),
             tickfont=dict(size=14, color='#ffffff'),
             tickangle=-25,
             gridcolor='#333333'
         ),
         yaxis=dict(
             title='Post-Plant Success (%)',
-            title_font=dict(size=16, color='#FDB913'),
+            title_font=dict(size=16, color='#FD2659'),
             tickfont=dict(size=14, color='#ffffff'),
             gridcolor='#333333',
             range=[0, 100]
@@ -948,12 +1042,12 @@ if 'Atk_PP_Success' in summary.columns and 'Def_PP_Success' in summary.columns:
 
 # 📊 PLAYER COMPARISON TAB
 with tabs[5]:
-    st.subheader("🎚 Player vs VCT Benchmark Comparison")
+    st.subheader("🎚 选手 vs VCT平均水平比较")
 
     try:
         player_df = pd.read_csv("form.csv")
     except Exception as e:
-        st.warning(f"Could not load player data: {e}")
+        st.warning(f"无法加载选手数据: {e}")
         player_df = pd.DataFrame()
 
     if not player_df.empty:
@@ -968,25 +1062,25 @@ with tabs[5]:
         max_date = player_df['Date'].max().date()
 
         col1, col2 = st.columns(2)
-        selected_player = col1.selectbox("Select a player:", all_players, key='compare_player')
-        start_date = col1.date_input("Start date:", value=min_date, min_value=min_date, max_value=max_date, key='compare_start')
-        end_date = col2.date_input("End date:", value=max_date, min_value=min_date, max_value=max_date, key='compare_end')
-        selected_map = col2.selectbox("Filter by Map:", ["All"] + all_maps, key='compare_map')
+        selected_player = col1.selectbox("选择一位选手:", all_players, key='compare_player')
+        start_date = col1.date_input("开始日期:", value=min_date, min_value=min_date, max_value=max_date, key='compare_start')
+        end_date = col2.date_input("结束日期:", value=max_date, min_value=min_date, max_value=max_date, key='compare_end')
+        selected_map = col2.selectbox("按地图筛选:", ["All"] + all_maps, key='compare_map')
 
         # Agent to role mapping
         agent_roles = {
-            'Jett': 'Duelist', 'Raze': 'Duelist', 'Reyna': 'Duelist', 'Yoru': 'Duelist', 'Phoenix': 'Duelist', 'Iso': 'Duelist', 'Waylay': 'Duelist', 'Neon':'Duelist',
+            'Jett': '决斗 Duelist', 'Raze': '决斗 Duelist', 'Reyna': '决斗 Duelist', 'Yoru': '决斗 Duelist', 'Phoenix': '决斗 Duelist', 'Iso': '决斗 Duelist', 'Waylay': '决斗 Duelist', 'Neon':'决斗 Duelist',
             'Skye': 'Initiator', 'KAY/O': 'Initiator', 'Breach': 'Initiator', 'Fade': 'Initiator', 'Sova': 'Initiator', 'Gekko': 'Initiator', 'Tejo': 'Initiator',
             'Omen': 'Controller', 'Brimstone': 'Controller', 'Astra': 'Controller', 'Viper': 'Controller', 'Harbor': 'Controller', 'Clove': 'Controller',
-            'Killjoy': 'Sentinel', 'Cypher': 'Sentinel', 'Chamber': 'Sentinel', 'Sage': 'Sentinel', 'Deadlock': 'Sentinel', 'Vyse': 'Sentinel'
+            'Killjoy': '哨卫 Sentinel', 'Cypher': '哨卫 Sentinel', 'Chamber': '哨卫 Sentinel', 'Sage': '哨卫 Sentinel', 'Deadlock': '哨卫 Sentinel', 'Vyse': '哨卫 Sentinel'
         }
 
         # VCT average benchmarks by role
         vct_benchmarks = {
-            'Duelist':     {'ACS': 240, 'KPR': 0.90, 'FBSR': 0.55, 'FKPR': 0.18, 'Atk_Entry': 0.55},
-            'Initiator':   {'ACS': 196, 'KPR': 0.90, 'FD': 2, 'K+A per Round': 1, 'Assists': 10.0},
-            'Controller':  {'ACS': 203, 'KPR': 0.90, 'FD': 2, 'K+A per Round': 1, 'Multi_Kills': 0.25},
-            'Sentinel':    {'ACS': 200, 'KPR': 0.90, 'FD': 2, 'Multi_Kills': 0.25, 'Anchor_Time': 48.0},
+            '决斗 Duelist':     {'ACS': 240, 'KPR': 0.90, 'FBSR': 0.55, 'FKPR': 0.18, 'Atk_Entry': 0.55},
+            '先锋 Initiator':   {'ACS': 196, 'KPR': 0.90, 'FD': 2, 'K+A per Round': 1, 'Assists': 10.0},
+            '控场 Controller':  {'ACS': 203, 'KPR': 0.90, 'FD': 2, 'K+A per Round': 1, 'Multi_Kills': 0.25},
+            '哨卫 Sentinel':    {'ACS': 200, 'KPR': 0.90, 'FD': 2, 'Multi_Kills': 0.25, 'Anchor_Time': 48.0},
         }
 
         filtered = player_df[
@@ -1030,7 +1124,7 @@ with tabs[5]:
             agent_stats['K+A per Round'] = (agent_stats['Kills'] + agent_stats['Assists']) / agent_stats['Rounds'].replace(0, float('nan'))
             agent_stats['Role'] = agent_stats['Agent'].map(agent_roles)
 
-            selected_role = st.selectbox("Select Role:", sorted(vct_benchmarks.keys()), key='compare_role')
+            selected_role = st.selectbox("选择英雄种类:", sorted(vct_benchmarks.keys()), key='compare_role')
             role_agents = agent_stats[agent_stats['Role'] == selected_role]
 
             if not role_agents.empty:
@@ -1078,7 +1172,7 @@ with tabs[5]:
                     theta=categories,
                     fill='toself',
                     name=f"{selected_player}",
-                    line=dict(color="#FDB913")
+                    line=dict(color="#FD2659")
                 ))
                 fig.add_trace(go.Scatterpolar(
                     r=benchmark_values,
@@ -1131,25 +1225,25 @@ with tabs[5]:
                             showline=False,
                             gridcolor="#333333"
                         ),
-                        angularaxis=dict(tickfont=dict(color="#FDB913"))
+                        angularaxis=dict(tickfont=dict(color="#FD2659"))
                     ),
                     showlegend=True,
                     legend=dict(font=dict(color="#ffffff")),
                     plot_bgcolor='#000000',
                     paper_bgcolor='#000000',
-                    font=dict(family='Inter', color='#FDB913'),
-                    title=dict(text=f"{selected_role} Stats vs VCT Benchmark", font=dict(size=16, color='#FDB913')),
+                    font=dict(family='Inter', color='#FD2659'),
+                    title=dict(text=f"{selected_role} 数据 vs VCT 平均水平", font=dict(size=16, color='#FD2659')),
                     margin=dict(l=40, r=40, t=60, b=40)
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
             else:
-                st.info("No agents played in the selected role during this period.")
+                st.info("选手在选定的时间段内没有使用过该种类的英雄。")
 
         else:
-            st.info("No data found for this player in selected filters.")
+            st.info("在所选筛选条件中未找到该玩家的数据。")
     else:
-        st.warning("No player stats found in form.csv")
+        st.warning("form.csv 中未找到选手统计数据。")
 
 # Footer in bottom-right corner
 # Full-width footer pinned to bottom
@@ -1161,7 +1255,7 @@ st.markdown("""
             left: 0;
             width: 100%;
             background-color: #000000;
-            color: #FDB913;
+            color: #49ffd3;
             text-align: center;
             font-size: 13px;
             font-family: Inter, sans-serif;
@@ -1171,7 +1265,9 @@ st.markdown("""
         }
     </style>
     <div class="footer">
-        Made by: <b>Ominous</b> | X:
-        <a href="https://x.com/_SushantJha" target="_blank" style="color: #FDB913; text-decoration: none;">@_SushantJha</a>
+        原作者 Made by: <b>Ominous</b> | X:
+        <a href="https://x.com/_SushantJha" target="_blank" style="color: #49ffd3; text-decoration: none;">@_SushantJha</a> // 修改&本地化 Modified & Localized by: <b>OTSEndPoem</b> | X:
+        <a href="https://x.com/otsendpoem" target="_blank" style="color: #49ffd3; text-decoration: none;">@otsendpoem</a> | Bilibili:
+        <a href="https://space.bilibili.com/646082282" target="_blank" style="color: #49ffd3; text-decoration: none;">@OTSEndPoem</a>
     </div>
 """, unsafe_allow_html=True)
