@@ -14,14 +14,8 @@ USERNAME = "admin"
 PASSWORD = "anyquestions"
 
 # Login logic
-# Allow automated tests to bypass login when AUTOTEST=1 is set in the environment
-if os.getenv("AUTOTEST") == "1":
-    # mark as logged in for headless automated checks
-    if "logged_in" not in st.session_state or not st.session_state.logged_in:
-        st.session_state.logged_in = True
-else:
-    if "logged_in" not in st.session_state:
-        st.session_state.logged_in = False
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
 
 if not st.session_state.logged_in:
     st.title("🔒 登录训练赛仪表盘")
