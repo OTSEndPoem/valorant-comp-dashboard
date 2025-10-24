@@ -1,0 +1,16 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Streamlit / development snapshots
+_auto_snapshot*.html
+_after_css_update.html
+_auto_snapshot_after_login.html
+_auto_snapshot_autotest.html
+_rendered_page.html
+_streamlit_index_css.txt
+
+# Editor / OS
+.vscode/
+Thumbs.db
+*.log
