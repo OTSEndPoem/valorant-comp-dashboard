@@ -2,3 +2,7 @@ streamlit
 pandas
 plotly
 seaborn
+
+# UI test dependencies
+playwright
+pytest

@@ -1,0 +1,45 @@
+name: Headless UI checks
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - dev-autotest
+
+jobs:
+  headless-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install Playwright browsers
+        run: |
+          python -m playwright install --with-deps
+
+      - name: Start Streamlit app
+        run: |
+          # Start streamlit in background and wait until it's reachable
+          nohup python -m streamlit run streamlit_dashboard.py --server.port 8501 --server.headless true > streamlit.log 2>&1 &
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            if curl -sSf http://127.0.0.1:8501 > /dev/null; then
+              echo "Streamlit is up"
+              break
+            fi
+            echo "Waiting for Streamlit... ($i)"
+            sleep 2
+          done
+
+      - name: Run UI checks (pytest)
+        run: |
+          pytest -q tests/test_headless.py
