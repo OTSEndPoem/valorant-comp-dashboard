@@ -107,3 +107,51 @@ Built and maintained by **Ominous**
 
 ---
 
+## 🧪 Automated testing (AUTOTEST)
+
+For local headless checks and CI runs we added a small, opt-in bypass to the development branch `dev-autotest` that lets automated scripts skip the interactive login step.
+
+Key points:
+- The main codebase (branch `anyquestions` / `main`) is unchanged — the bypass is only committed to `dev-autotest`.
+- The bypass activates only when the environment variable `AUTOTEST` is set to `1`.
+
+Local quick run (start a headless Streamlit instance that auto-skips login):
+
+```powershell
+$env:AUTOTEST='1'; & 'C:/Users/you/AppData/Local/Programs/Python/Python3XX/python.exe' -m streamlit run "d:\Repo\valorant-comp-dashboard\streamlit_dashboard.py" --server.headless true --server.port 8503
+```
+
+CI example (GitHub Actions) — run headless checks with AUTOTEST enabled:
+
+```yaml
+name: CI - Headless checks
+
+on: [push]
+
+jobs:
+  headless-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run headless automated checks
+        env:
+          AUTOTEST: '1'
+        run: |
+          python -c "from playwright.sync_api import sync_playwright; print('Playwright available')"
+          # run your test script here, e.g.:
+          python tests/run_headless_checks.py
+```
+
+Notes:
+- If you want to keep the bypass in the repo, keep it confined to `dev-autotest` and only merge to main after removing it (or keep it gated behind `AUTOTEST`).
+- The repo contains small snapshot files generated during development; you can safely remove them or add them to `.gitignore` if they are not needed.
+
+
