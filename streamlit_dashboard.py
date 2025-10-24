@@ -247,7 +247,7 @@ with tabs[0]:
 
 # This block should only be inside the Map Composition tab
 with tabs[1]:
-    st.subheader("Top 5 阵容胜率")
+    st.subheader("阵容胜率")
     if not form_df.empty:
         valid_maps = []
         for i in range(0, len(form_df) - 4, 5):
@@ -547,6 +547,8 @@ with tabs[2]:
         plot_df['Map'] = pd.Categorical(plot_df['Map'], categories=plot_df.groupby('Map')['Win Rate (%)'].mean().sort_values(ascending=False).index, ordered=True)
 
         # VCT CN color map
+        # Keep the bar colors (Attack/Defense) visually distinct, but we'll
+        # render legend text in #f2f2f2 separately in layout.
         color_map = {
             'Attack': '#FD2659',   # Red
             'Defense': '#49ffd3'   # Green
@@ -575,7 +577,11 @@ with tabs[2]:
             paper_bgcolor='#000000',
             font=dict(color='#f2f2f2', family='Inter'),
             title_font=dict(color='#49ffd3', size=20),
-            legend_title_text='Side',
+            # Legend: keep the title and item text color as requested (#f2f2f2)
+            legend=dict(
+                title=dict(text='Side', font=dict(color='#f2f2f2')),
+                font=dict(color='#f2f2f2')
+            ),
             xaxis=dict(tickangle=-25, gridcolor='#f2f2f2'),
             yaxis=dict(range=[0, 100], gridcolor='#f2f2f2')
         )
@@ -678,7 +684,7 @@ with tabs[3]:
         max_date = score_df['Date'].max()
 
         start_date, end_date = st.date_input(
-            "Select Date Range",
+            "选择时间范围",
             value=(min_date, max_date),
             min_value=min_date,
             max_value=max_date
@@ -707,7 +713,7 @@ with tabs[3]:
             text=grouped['Pistol Win Rate (%)'].apply(lambda x: f"{x:.1f}%"),
             color='Pistol Win Rate (%)',
             color_continuous_scale=['#49ffd3', '#FD2659'],
-            title="Pistol Win Rates by Map"
+            title="手枪局胜率"
         )
 
         fig_pistol.update_traces(
@@ -739,7 +745,7 @@ with tabs[3]:
              ])
 
              map_list = conversion_data['Map'].dropna().unique()
-             selected_map = st.selectbox("Select a map to view 2nd round breakdown:", sorted(map_list))
+             selected_map = st.selectbox("选择地图以显示第二回合结果:", sorted(map_list))
 
              map_conversions = conversion_data[conversion_data['Map'] == selected_map]
 
@@ -750,7 +756,7 @@ with tabs[3]:
                  filtered_win = map_conversions[map_conversions['Conversion'].isin(['WW', 'WL'])]
 
                  if filtered_win.empty:
-                     st.info("No conversion attempts found for pistol round wins on this map.")
+                     st.info("未找到本地图中手枪局转化尝试结果数据。")
                  else:
                      pie_data_win = filtered_win['Conversion'].value_counts(normalize=True).reset_index()
                      pie_data_win.columns = ['Conversion', 'Percentage']
@@ -790,7 +796,7 @@ with tabs[3]:
                  filtered_loss = map_conversions[map_conversions['Conversion'].isin(['LL', 'LW'])]
 
                  if filtered_loss.empty:
-                     st.info("No eco round outcomes found for pistol round losses on this map.")
+                     st.info("未找到本地图中Eco局尝试结果数据。")
                  else:
                      pie_data_loss = filtered_loss['Conversion'].value_counts(normalize=True).reset_index()
                      pie_data_loss.columns = ['Conversion', 'Percentage']
@@ -800,7 +806,7 @@ with tabs[3]:
                          pie_data_loss,
                          names='Conversion',
                          values='Percentage',
-                         title=f"Eco分结果 - {selected_map}",
+                         title=f"Eco局尝试结果 - {selected_map}",
                          color='Conversion',
                          color_discrete_map={
                              'LL': '#d3d3d3',
@@ -826,17 +832,17 @@ with tabs[3]:
                      st.plotly_chart(fig_pie_loss, use_container_width=True)
 
     else:
-         st.info("No data available for pistol or 2nd round conversion insights.")
+         st.info("未找到本地图中手枪局/第二回合转化结果数据。")
 
 
 ## 🔢 PLAYER STATS TAB
 with tabs[4]:
-    st.subheader("🧑‍💼 Player Agent Stats")
+    st.subheader("🧑‍💼 选手英雄数据统计")
 
     try:
         player_df = pd.read_csv("form.csv")
     except Exception as e:
-        st.warning(f"Could not load player data: {e}")
+        st.warning(f"无法加载选手数据: {e}")
         player_df = pd.DataFrame()
 
     if not player_df.empty:
@@ -850,7 +856,7 @@ with tabs[4]:
         max_date = player_df['Date'].max().date()
 
         col1, col2 = st.columns(2)
-        selected_player = col1.selectbox("Select a player:", all_players)
+        selected_player = col1.selectbox("选择选手:", all_players)
         start_date = col1.date_input("开始日期:", min_value=min_date, max_value=max_date, value=min_date)
         end_date = col2.date_input("结束日期:", min_value=min_date, max_value=max_date, value=max_date)
         selected_map = col2.selectbox("按地图筛选:", ["All"] + all_maps)
@@ -880,21 +886,21 @@ with tabs[4]:
 
             display_df = agent_stats.round(2)[['Agent', 'Rounds', 'Kills', 'Deaths', 'Assists', 'ACS', 'FK', 'Plants', 'K/D Ratio', 'K+A per Round']]
 
-            st.markdown(f"### 🔍 Agent Performance for {selected_player} from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}")
+            st.markdown(f"### 🔍 {selected_player} 的英雄表现 - 从 {start_date.strftime('%Y-%m-%d')} 到 {end_date.strftime('%Y-%m-%d')}")
             st.dataframe(display_df, use_container_width=True)
 
         else:
-            st.info("No data for this player in the selected filters.")
+            st.info("未找到该选手在所选筛选条件下的数据。")
 
     else:
-        st.warning("No player stats found in form.csv")
+        st.warning("未在form.csv中找到选手数据。")
 
      # 🐝 PLAYER ACS BEESWARM PLOT
-    with st.expander("🐝 Player ACS Beeswarm Plot"):
+    with st.expander("🐝 选手ACS蜂群图"):
         import seaborn as sns
         import matplotlib.pyplot as plt
 
-        st.subheader("🐝 Player ACS Beeswarm Plot")
+        st.subheader("🐝 选手ACS蜂群图")
 
         # Clean + convert
         df = pd.read_csv("foracs.csv")
@@ -909,9 +915,9 @@ with tabs[4]:
 
         # Filters
         col1, col2 = st.columns(2)
-        selected_player = col1.selectbox("Select Player", players)
-        selected_agents = col2.multiselect("Filter by Agent(s)", agents, default=agents)
-        selected_maps = st.multiselect("按地图筛选(s)", maps, default=maps)
+        selected_player = col1.selectbox("选择选手", players)
+        selected_agents = col2.multiselect("按英雄筛选(可多选)", agents, default=agents)
+        selected_maps = st.multiselect("按地图筛选(可多选)", maps, default=maps)
 
         start_date = st.date_input("开始日期", value=min(dates), min_value=min(dates), max_value=max(dates))
         end_date = st.date_input("结束日期", value=max(dates), min_value=min(dates), max_value=max(dates))
@@ -1066,10 +1072,13 @@ with tabs[5]:
             'Jett': '决斗 Duelist', 'Raze': '决斗 Duelist', 'Reyna': '决斗 Duelist', 'Yoru': '决斗 Duelist', 'Phoenix': '决斗 Duelist', 'Iso': '决斗 Duelist', 'Waylay': '决斗 Duelist', 'Neon':'决斗 Duelist',
             'Skye': 'Initiator', 'KAY/O': 'Initiator', 'Breach': 'Initiator', 'Fade': 'Initiator', 'Sova': 'Initiator', 'Gekko': 'Initiator', 'Tejo': 'Initiator',
             'Omen': 'Controller', 'Brimstone': 'Controller', 'Astra': 'Controller', 'Viper': 'Controller', 'Harbor': 'Controller', 'Clove': 'Controller',
-            'Killjoy': '哨卫 Sentinel', 'Cypher': '哨卫 Sentinel', 'Chamber': '哨卫 Sentinel', 'Sage': '哨卫 Sentinel', 'Deadlock': '哨卫 Sentinel', 'Vyse': '哨卫 Sentinel', 'Veto': '哨卫 Sentinel'
+            'Killjoy': '哨卫 Sentinel', 'Cypher': '哨卫 Sentinel', 'Chamber': '哨卫 Sentinel', 'Sage': '哨卫 Sentinel', 'Deadlock': '哨卫 Sentinel', 'Vyse': '哨卫 Sentinel' , 'Veto': '哨卫 Sentinel'
         }
 
         # VCT average benchmarks by role
+        # FBSR = First Blood Success Rate = FK / (FK + FD), FKPR = First Kill per Round, KPR = Kills per Round, ACS = Average Combat Score, Atk_Entry = Attack Entry Success Rate, FD = First Deaths
+        # Anchor_Time = Average time spent anchoring the site before spike plant per round (in seconds)
+        # Values are illustrative; replace with actual VCT stats as needed
         vct_benchmarks = {
             '决斗 Duelist':     {'ACS': 240, 'KPR': 0.90, 'FBSR': 0.55, 'FKPR': 0.18, 'Atk_Entry': 0.55},
             '先锋 Initiator':   {'ACS': 196, 'KPR': 0.90, 'FD': 2, 'K+A per Round': 1, 'Assists': 10.0},
@@ -1182,7 +1191,7 @@ with tabs[5]:
                     bmark = benchmark[stat]
                     diff = val - bmark
                     sign = '+' if diff >= 0 else ''
-                    color = "#14532d" if diff >= 0 else "#7f1d1d"
+                    color = "#49ffd3" if diff >= 0 else "#fd2659"
 
                     # Use % format for relevant stats
                     if stat in ['FBSR', 'FKPR', 'Atk Entry']:
